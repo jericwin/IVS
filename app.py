@@ -1,3 +1,4 @@
+from flask import jsonify
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -6,7 +7,10 @@ from models import db, User, Asset, Transaction, Address
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ivs-super-secret-key-123'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/ivs'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "mysql+pymysql://root:@localhost/ivs"
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -318,7 +322,5 @@ def api_chat():
         
     return jsonify({'reply': reply})
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
