@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyer Dashboard IVS</title>
+  <meta name="description" content="IVS Buyer Dashboard">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-top: 80px; /* space for navbar */
+    }
+
+    /* Override nav for dashboard */
+    .nav {
+      background: color-mix(in srgb, var(--bg-primary) 95%, transparent);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .nav-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 60px 5%;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .dashboard-header {
+      margin-bottom: 48px;
+      animation: fadeUp 0.8s var(--ease-out-expo) forwards;
+    }
+
+    .dashboard-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      margin-bottom: 12px;
+      background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dashboard-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+      animation: fadeUp 0.8s var(--ease-out-expo) 0.2s forwards;
+      opacity: 0;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 32px;
+      border-radius: 4px;
+      transition: transform 0.4s var(--ease-out-expo), border-color 0.4s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s var(--ease-out-expo);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-glow);
+    }
+
+    .stat-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--accent-light);
+    }
+
+    .dashboard-sections {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      animation: fadeUp 0.8s var(--ease-out-expo) 0.4s forwards;
+      opacity: 0;
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-sections {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .collection-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s var(--ease-out-expo);
+    }
+
+    .collection-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,10,10,0.9), transparent);
+      z-index: 1;
+    }
+
+    .collection-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.5;
+      transition: transform 0.8s var(--ease-out-expo), opacity 0.4s;
+      z-index: 0;
+    }
+
+    .collection-item:hover img {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+    
+    .collection-item:hover {
+      border-color: var(--accent);
+    }
+
+    .collection-info {
+      position: relative;
+      z-index: 2;
+    }
+
+    .collection-name {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+
+    .collection-meta {
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--border-subtle);
+      transition: border-color 0.3s;
+    }
+    
+    .activity-item:hover {
+      border-left-color: var(--accent);
+      background: var(--bg-secondary);
+    }
+
+    .activity-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .activity-text strong {
+      color: var(--accent-light);
+      font-weight: 500;
+    }
+
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="navbar">
+    <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/buyer/dashboard">Overview</a>
+      <a href="/buyer/marketplace">Marketplace</a>
+      <a href="/buyer/purchases" style="color: var(--accent);">My Purchases</a>
+      <a href="/buyer/settings">Settings</a>
+      <div class="theme-switch-wrapper" style="margin-left: 20px;">
+        <label class="theme-switch">
+          <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);" class="theme-checkbox" />
+          <div class="slider round">
+            <span class="icon-sun" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+            <span class="icon-moon" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+          </div>
+        </label>
+      </div>
+      <div style="position: relative; margin-left: 20px;">
+        <div class="nav-profile" style="cursor: pointer;" onclick="const menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block';">
+          <div class="avatar">B</div>
+          <span style="font-size: 0.9rem; font-weight: 500;">Buyer Account</span>
+        </div>
+        <div style="display: none; position: absolute; top: 120%; right: 0; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 200px; z-index: 100;">
+          <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 16px;">
+            <p style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Signed in as</p>
+            <p style="font-weight: 600; font-size: 0.9rem; margin: 4px 0 0 0; color: var(--text-primary);">Buyer Account</p>
+          </div>
+          <a href="/profile" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">My Profile</a>
+          <a href="/login" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; color: white !important;">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <main class="main-content">
+      
+      <div class="dashboard-header" style="margin-bottom: 24px;">
+        <h1 class="dashboard-title">My Purchases</h1>
+        <p class="dashboard-subtitle">A history of assets you've acquired.</p>
+      </div>
+
+      <div class="dashboard-sections" style="grid-template-columns: 1fr;">
+        
+        <!-- Main Panel: Purchases List -->
+        <div class="section-main">
+          <div class="activity-list">
+            {% for tx in transactions %}
+            <div style="border: 1px solid var(--border-subtle); border-radius: 4px; overflow: hidden; background: var(--bg-card); cursor: pointer;" onclick="const details = this.querySelector('.tx-details'); details.style.display = details.style.display === 'block' ? 'none' : 'block';">
+              <div class="activity-item" style="align-items: center; padding: 24px; border: none; margin: 0; cursor: inherit; transition: background 0.3s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
+                <img src="/static/uploads/{{ tx.asset.image_filename }}" onerror="this.src='/static/images/product-1.png'" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 16px;">
+                <div class="activity-content">
+                  <div class="activity-text" style="font-size: 1.1rem;"><strong>{{ tx.asset.name }}</strong></div>
+                  <div class="activity-time" style="font-size: 0.9rem;">Purchased on {{ tx.date_purchased.strftime('%b %d, %Y') }}</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-family: var(--font-display); font-size: 1.2rem; color: var(--text-primary);">₱{{ "{:,.2f}".format(tx.asset.price) }}</div>
+                  <div style="font-size: 0.8rem; color: var(--accent);">Paid in full</div>
+                </div>
+              </div>
+              
+              <!-- Expandable Details -->
+              <div class="tx-details" style="display: none; border-top: 1px solid var(--border-subtle); padding: 24px; background: color-mix(in srgb, var(--bg-card) 95%, black); cursor: default;" onclick="event.stopPropagation();">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                  <div>
+                    <h4 style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Delivery Address</h4>
+                    {% if tx.address %}
+                    <p style="margin: 0; font-size: 0.95rem;"><strong>{{ tx.address.recipient_name }}</strong> ({{ tx.address.phone }})</p>
+                    <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">{{ tx.address.street_address }}</p>
+                    {% else %}
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Address unavailable</p>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <h4 style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Order Info</h4>
+                    <p style="margin: 0; font-size: 0.95rem;">Order ID: #{{ tx.id }}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 0.95rem;">Payment: <span style="text-transform: capitalize;">{% if tx.payment_method == 'cod' %}Cash on Delivery{% elif tx.payment_method == 'ewallet' %}E-Wallet{% elif tx.payment_method %}{{ tx.payment_method }}{% else %}Unknown{% endif %}</span></p>
+                    <a href="/buyer/asset/{{ tx.asset.id }}" class="auth-btn" style="display: inline-block; width: auto; margin-top: 12px; padding: 6px 12px; font-size: 0.8rem; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">View Asset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+              <p>You haven't purchased anything yet.</p>
+              <a href="/buyer/marketplace" class="auth-btn" style="display: inline-block; width: auto; margin-top: 16px;">Browse Marketplace</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/static/theme.js"></script>
+  {% include 'chatbot.html' %}
+</body>
+</html>
+
+
+
+
+

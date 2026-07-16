@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ asset.name }} | IVS Marketplace</title>
+  <meta name="description" content="View asset details">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+
+    .nav {
+      background: color-mix(in srgb, var(--bg-primary) 95%, transparent);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .nav-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 60px 5%;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .asset-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      animation: fadeUp 0.8s var(--ease-out-expo) forwards;
+    }
+
+    @media (max-width: 992px) {
+      .asset-detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .asset-image-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .asset-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .asset-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .asset-category {
+      font-size: 0.9rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .asset-title {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .asset-price {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--accent-light);
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .asset-description {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .seller-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="navbar">
+    <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/buyer/dashboard">Overview</a>
+      <a href="/buyer/marketplace" style="color: var(--accent);">Marketplace</a>
+      <a href="/buyer/purchases">My Purchases</a>
+      <a href="/buyer/settings">Settings</a>
+      <div class="theme-switch-wrapper" style="margin-left: 20px;">
+        <label class="theme-switch">
+          <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);" class="theme-checkbox" />
+          <div class="slider round">
+            <span class="icon-sun" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+            <span class="icon-moon" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+          </div>
+        </label>
+      </div>
+      <div style="position: relative; margin-left: 20px;">
+        <div class="nav-profile" style="cursor: pointer;" onclick="const menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block';">
+          <div class="avatar">{{ current_user.first_name[0] }}</div>
+          <span style="font-size: 0.9rem; font-weight: 500;">{{ current_user.first_name }}</span>
+        </div>
+        <div style="display: none; position: absolute; top: 120%; right: 0; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 200px; z-index: 100;">
+          <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 16px;">
+            <p style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Signed in as</p>
+            <p style="font-weight: 600; font-size: 0.9rem; margin: 4px 0 0 0; color: var(--text-primary);">{{ current_user.first_name }}</p>
+          </div>
+          <a href="/profile" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">My Profile</a>
+          <a href="/logout" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; color: white !important;">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <main class="main-content">
+      
+      <a href="/buyer/marketplace" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 32px; transition: 0.3s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">
+        &larr; Back to Marketplace
+      </a>
+
+      <div class="asset-detail-grid">
+        <div class="asset-image-container">
+          <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+        </div>
+        
+        <div class="asset-info">
+          <div class="asset-category">{{ asset.category }}</div>
+          <h1 class="asset-title">{{ asset.name }}</h1>
+          <div class="asset-price">₱{{ "{:,.2f}".format(asset.price) }}</div>
+          
+          <div class="asset-description">
+            {{ asset.description }}
+          </div>
+
+          <div class="seller-info">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid var(--border-subtle); color: var(--text-primary);">
+              {{ asset.seller.first_name[0] }}
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Listed By</div>
+              <div style="font-weight: 600;">{{ asset.seller.first_name }} {{ asset.seller.last_name }}</div>
+            </div>
+          </div>
+
+          {% if asset.status == 'Active' %}
+          <a href="/buyer/checkout/{{ asset.id }}" class="auth-btn" style="text-align: center; display: block; text-decoration: none; font-size: 1.1rem; padding: 16px;">
+            Buy Now
+          </a>
+          {% else %}
+          <button class="auth-btn" disabled style="background: var(--bg-card); border-color: var(--border-subtle); color: var(--text-secondary); cursor: not-allowed;">
+            Item Sold
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/static/theme.js"></script>
+  {% include 'chatbot.html' %}
+</body>
+</html>

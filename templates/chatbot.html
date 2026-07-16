@@ -1,0 +1,246 @@
+<!-- Chatbot Styles -->
+<style>
+  .chatbot-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    font-family: var(--font-body);
+  }
+
+  .chatbot-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, background 0.3s ease;
+  }
+
+  .chatbot-btn:hover {
+    transform: scale(1.05);
+    background: var(--accent-light);
+  }
+
+  .chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    max-height: calc(100vh - 120px);
+    background: color-mix(in srgb, var(--bg-card) 95%, transparent);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: bottom right;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none;
+  }
+
+  .chatbot-window.open {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .chatbot-header {
+    background: var(--bg-secondary);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .chatbot-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: var(--font-display);
+    color: var(--text-primary);
+  }
+
+  .chatbot-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+  }
+  
+  .chatbot-close:hover {
+    color: var(--text-primary);
+  }
+
+  .chatbot-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chat-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .chat-bubble.bot {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .chat-bubble.user {
+    background: var(--accent);
+    color: var(--bg-primary);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chatbot-input-area {
+    padding: 16px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: 8px;
+    background: var(--bg-card);
+  }
+
+  .chatbot-input {
+    flex: 1;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 10px 16px;
+    border-radius: 20px;
+    outline: none;
+    font-family: var(--font-body);
+  }
+
+  .chatbot-input:focus {
+    border-color: var(--accent);
+  }
+
+  .chatbot-send {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+  }
+
+  .chatbot-send:hover {
+    background: var(--accent-light);
+  }
+</style>
+
+<!-- Chatbot HTML -->
+<div class="chatbot-container">
+  <div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header">
+      <h3>IVS Support</h3>
+      <button class="chatbot-close" onclick="toggleChatbot()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="chatbot-messages" id="chatbotMessages">
+      <div class="chat-bubble bot">
+        Hello! I'm the IVS Support Assistant. How can I help you today?
+      </div>
+    </div>
+    <div class="chatbot-input-area">
+      <input type="text" id="chatbotInput" class="chatbot-input" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+      <button class="chatbot-send" onclick="sendChatMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+  </div>
+
+  <button class="chatbot-btn" onclick="toggleChatbot()">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  </button>
+</div>
+
+<!-- Chatbot JS -->
+<script>
+  function toggleChatbot() {
+    const win = document.getElementById('chatbotWindow');
+    win.classList.toggle('open');
+  }
+
+  function addMessageToChat(text, sender) {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-bubble ${sender}`;
+    msgDiv.textContent = text;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  async function sendChatMessage() {
+    const inputField = document.getElementById('chatbotInput');
+    const message = inputField.value.trim();
+    
+    if (!message) return;
+
+    // Display user message
+    addMessageToChat(message, 'user');
+    inputField.value = '';
+
+    // Show typing indicator (optional simple version)
+    const typingId = 'typing-' + Date.now();
+    const messagesDiv = document.getElementById('chatbotMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-bubble bot';
+    typingDiv.id = typingId;
+    typingDiv.textContent = '...';
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: message })
+      });
+      
+      const data = await response.json();
+      
+      // Remove typing indicator
+      document.getElementById(typingId).remove();
+      
+      // Display bot response
+      addMessageToChat(data.reply, 'bot');
+    } catch (error) {
+      console.error('Error in chat:', error);
+      document.getElementById(typingId).remove();
+      addMessageToChat('Sorry, I am having trouble connecting to the server.', 'bot');
+    }
+  }
+</script>

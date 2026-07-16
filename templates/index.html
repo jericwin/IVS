@@ -1,15 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IVS — Premium Men's Essentials</title>
+  <title>IVS</title>
   <meta name="description"
     content="IVS delivers premium watches, caps, shirts, and jackets crafted for the modern man. Elevate your style with our curated collection.">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
 </head>
 
 <body>
@@ -19,20 +18,46 @@
 
   <!-- Preloader -->
   <div class="preloader" id="preloader">
-    <div class="preloader-logo"><img src="images/logo.png" alt="IVS Logo"></div>
+    <div class="preloader-logo"><img src="/static/images/logo.png" alt="IVS Logo"></div>
     <div class="preloader-bar"></div>
   </div>
 
   <!-- Navigation -->
   <nav class="nav" id="navbar">
-    <a href="#" class="nav-logo"><img src="images/logo.png" alt="IVS Logo"></a>
+    <a href="#" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
       <a href="#products">Collection</a>
       <a href="#features">Why IVS</a>
       <a href="#story">Our Story</a>
       <a href="#newsletter">Contact</a>
-      <a href="login.html">Log In</a>
-      <a href="signup.html" class="nav-cta">Sign Up</a>
+      <a href="/login">Log In</a>
+      <a href="/signup" class="nav-cta">Sign Up</a>
+      <div class="theme-switch-wrapper" style="margin-left: 20px;">
+        <label class="theme-switch">
+          <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);"
+            class="theme-checkbox" />
+          <div class="slider round">
+            <span class="icon-sun" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg></span>
+            <span class="icon-moon" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg></span>
+          </div>
+        </label>
+      </div>
     </div>
     <div class="hamburger" id="hamburger">
       <span></span>
@@ -44,10 +69,10 @@
   <!-- Hero Section -->
   <section class="hero" id="hero">
     <div class="hero-bg">
-      <img src="images/hero-bg.png" alt="IVS Atmosphere">
+      <img src="/static/images/hero-bg.png" alt="IVS Atmosphere">
     </div>
     <div class="hero-content">
-      <div class="hero-tag">Established 2026 — Parañaque</div>
+      <div class="hero-tag">Established 2026 â€” ParaÃ±aque</div>
       <h1 class="hero-title">
         Dress Like<br>
         You <span class="accent">Mean</span> It
@@ -121,7 +146,8 @@
     <div class="section-header reveal">
       <div class="section-tag">The Collection</div>
       <h2 class="section-title">Curated For the<br>Modern Man</h2>
-      <p class="section-subtitle">Each piece selected to make a statement. No compromises, no fillers — just raw, uncut
+      <p class="section-subtitle">Each piece selected to make a statement. No compromises, no fillers â€” just raw,
+        uncut
         style.</p>
     </div>
     <div class="products-grid">
@@ -129,7 +155,7 @@
       <div class="product-card reveal reveal-delay-1">
         <div class="product-badge">Bestseller</div>
         <div class="product-image">
-          <img src="images/watch.png" alt="IVS Chronograph Watch">
+          <img src="/static/images/watch.png" alt="IVS Chronograph Watch">
           <div class="product-overlay">
             <button class="product-overlay-btn">Quick View</button>
           </div>
@@ -137,13 +163,13 @@
         <div class="product-info">
           <div class="product-category">Timepiece</div>
           <div class="product-name">Shadow Chronograph</div>
-          <div class="product-price">₱4,990</div>
+          <div class="product-price">â‚±4,990</div>
         </div>
       </div>
       <!-- Cap -->
       <div class="product-card reveal reveal-delay-2">
         <div class="product-image">
-          <img src="images/cap.png" alt="IVS Stealth Cap">
+          <img src="/static/images/cap.png" alt="IVS Stealth Cap">
           <div class="product-overlay">
             <button class="product-overlay-btn">Quick View</button>
           </div>
@@ -151,14 +177,14 @@
         <div class="product-info">
           <div class="product-category">Headwear</div>
           <div class="product-name">Stealth Snapback</div>
-          <div class="product-price">₱890</div>
+          <div class="product-price">â‚±890</div>
         </div>
       </div>
       <!-- Shirt -->
       <div class="product-card reveal reveal-delay-3">
         <div class="product-badge">New</div>
         <div class="product-image">
-          <img src="images/shirt.png" alt="IVS Essential Tee">
+          <img src="/static/images/shirt.png" alt="IVS Essential Tee">
           <div class="product-overlay">
             <button class="product-overlay-btn">Quick View</button>
           </div>
@@ -166,13 +192,13 @@
         <div class="product-info">
           <div class="product-category">Apparel</div>
           <div class="product-name">Essential Fitted Tee</div>
-          <div class="product-price">₱690</div>
+          <div class="product-price">â‚±690</div>
         </div>
       </div>
       <!-- Jacket -->
       <div class="product-card reveal reveal-delay-4">
         <div class="product-image">
-          <img src="images/jacket.png" alt="IVS Bomber Jacket">
+          <img src="/static/images/jacket.png" alt="IVS Bomber Jacket">
           <div class="product-overlay">
             <button class="product-overlay-btn">Quick View</button>
           </div>
@@ -180,7 +206,7 @@
         <div class="product-info">
           <div class="product-category">Outerwear</div>
           <div class="product-name">Noir Leather Bomber</div>
-          <div class="product-price">₱3,490</div>
+          <div class="product-price">â‚±3,490</div>
         </div>
       </div>
     </div>
@@ -191,7 +217,7 @@
     <div class="section-header reveal">
       <div class="section-tag">Why Choose IVS</div>
       <h2 class="section-title">Built Different</h2>
-      <p class="section-subtitle">We don't follow trends — we set them. Here's what makes IVS the standard.</p>
+      <p class="section-subtitle">We don't follow trends â€” we set them. Here's what makes IVS the standard.</p>
     </div>
     <div class="features-grid">
       <div class="feature-card reveal reveal-delay-1">
@@ -204,7 +230,7 @@
           </svg>
         </div>
         <h3 class="feature-title">Premium Materials</h3>
-        <p class="feature-desc">Only the finest fabrics and metals. Every thread, every stitch — intentional.</p>
+        <p class="feature-desc">Only the finest fabrics and metals. Every thread, every stitch â€” intentional.</p>
       </div>
       <div class="feature-card reveal reveal-delay-2">
         <div class="feature-icon">
@@ -247,13 +273,13 @@
   <section class="section lookbook-section" id="story">
     <div class="lookbook-grid reveal">
       <div class="lookbook-visual">
-        <img src="images/jacket.png" alt="IVS Lookbook">
+        <img src="/static/images/jacket.png" alt="IVS Lookbook">
       </div>
       <div class="lookbook-content">
         <div class="section-tag">The IVS Story</div>
         <h2 class="section-title">We Don't Do<br>Ordinary</h2>
         <p class="lookbook-text">
-          IVS was born from a simple belief — Filipino men deserve access to premium,
+          IVS was born from a simple belief â€” Filipino men deserve access to premium,
           bold essentials without the luxury markup. We curate pieces that speak volumes
           before you even say a word. From boardroom watches to street-ready bombers,
           every item is a statement.
@@ -287,9 +313,9 @@
   <footer class="footer">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a href="#" class="nav-logo"><img src="images/logo.png" alt="IVS Logo"></a>
+        <a href="#" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
         <p class="footer-brand-text">Premium men's essentials crafted for those who refuse to settle. Watches, caps,
-          shirts & jackets — curated in Parañaque.</p>
+          shirts & jackets â€” curated in ParaÃ±aque.</p>
         <div class="footer-social">
           <a href="https://www.facebook.com/people/IVS-esntls/61587071466397/" aria-label="Facebook">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -337,7 +363,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p class="footer-copy">© Parañaque IVS. All rights reserved. Built in the Philippines.</p>
+      <p class="footer-copy">Â© ParaÃ±aque IVS. All rights reserved. Built in the Philippines.</p>
       <div class="footer-bottom-links">
         <a href="#">Privacy Policy</a>
         <a href="#">Terms of Service</a>
@@ -426,7 +452,7 @@
       e.preventDefault();
       const input = e.target.querySelector('input');
       const btn = e.target.querySelector('button');
-      btn.textContent = 'SUBSCRIBED ✓';
+      btn.textContent = 'SUBSCRIBED âœ“';
       btn.style.background = '#2d7d46';
       btn.style.borderColor = '#2d7d46';
       input.value = '';
@@ -446,6 +472,8 @@
       }
     });
   </script>
+  <script src="/static/theme.js"></script>
+  {% include 'chatbot.html' %}
 </body>
 
 </html>
