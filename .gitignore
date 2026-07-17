@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# Flask instance folder (local SQLite DB)
+instance/
+
+# SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (ephemeral on free hosting)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Logs
+*.log
+flask_output.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

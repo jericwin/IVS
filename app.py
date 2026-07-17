@@ -6,14 +6,22 @@ import os
 from models import db, User, Asset, Transaction, Address, ActivityLog
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'ivs-super-secret-key-123'
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL",
-    "mysql+pymysql://root:@localhost/ivs"
-)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ivs-super-secret-key-123')
+
+# Use DATABASE_URL env var if set (for cloud MySQL/Postgres),
+# otherwise fall back to a local SQLite database
+database_url = os.environ.get("DATABASE_URL", "sqlite:///ivs.db")
+# Render/Heroku sometimes gives postgres:// but SQLAlchemy needs postgresql://
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+# Auto-create all tables on startup (needed for SQLite on Render)
+with app.app_context():
+    db.create_all()
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -283,13 +291,15 @@ def seller_add_asset():
         filename = 'product-1.png'
         if image and image.filename:
             filename = image.filename
-            image.save(os.path.join(app.root_path, 'static', 'uploads', filename))
+            upload_dir = os.path.join(app.root_path, 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            image.save(os.path.join(upload_dir, filename))
             
         document = request.files.get('document')
         if document and document.filename:
-            # We save it but we don't strictly need to track it in DB for this demo
-            # You could add a `document_filename` column to the Asset table later!
-            document.save(os.path.join(app.root_path, 'static', 'uploads', document.filename))
+            upload_dir = os.path.join(app.root_path, 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            document.save(os.path.join(upload_dir, document.filename))
         
         try:
             parsed_price = float(price) if price else 0.0
