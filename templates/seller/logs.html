@@ -310,93 +310,55 @@
   <div class="dashboard-layout">
     <main class="main-content">
       
-      <div class="dashboard-header">
-        <h1 class="dashboard-title">Welcome back, Seller.</h1>
-        <p class="dashboard-subtitle">Here's what's happening with your listings today.</p>
+      <div class="dashboard-header" style="margin-bottom: 24px;">
+        <h1 class="dashboard-title">Activity Logs</h1>
+        <p class="dashboard-subtitle">Monitor the actions and login history of your store's employee accounts.</p>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Listed Assets</div>
-          <div class="stat-value">24</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Sales Volume</div>
-          <div class="stat-value">₱145,200</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Store Views</div>
-          <div class="stat-value">12,892</div>
-        </div>
-      </div>
-
-      <div class="dashboard-sections">
+      <div class="dashboard-sections" style="grid-template-columns: 1fr;">
         
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div style="grid-column: 1 / -1;">
-            {% for message in messages %}
-              <div style="background: var(--accent); color: var(--bg-primary); padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; text-align: center;">
-                {{ message }}
-              </div>
-            {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        
-        <!-- Main Panel: Recent Additions -->
         <div class="section-main">
-          <h2 class="section-title">Recent Listings</h2>
-          <div class="collection-grid">
-            {% for asset in assets %}
-            <a href="/seller/asset/{{ asset.id }}" style="text-decoration: none; color: inherit;">
-              <div class="collection-item">
-                <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
-                <div class="collection-info">
-                  {% if asset.status == 'Sold' %}
-                  <div style="position: absolute; top: 16px; right: 16px; background: var(--accent); color: var(--bg-primary); padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase;">Sold</div>
-                  {% endif %}
-                  <div class="collection-name">{{ asset.name }}</div>
-                  <div class="collection-meta">₱{{ "{:,.2f}".format(asset.price) }}</div>
-                </div>
-              </div>
-            </a>
-            {% endfor %}
-            <!-- Add New Asset Button -->
-            <a href="/seller/add-asset" class="collection-item" style="border: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: center; text-align: center; background: transparent; cursor: pointer; text-decoration: none; transition: 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
-               <div style="z-index: 2;">
-                 <div style="font-size: 2rem; color: var(--accent); margin-bottom: 10px;">+</div>
-                 <div style="font-size: 0.9rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);">Add New Asset</div>
-               </div>
-            </a>
-          </div>
-        </div>
-
-        <!-- Side Panel: Recent Activity -->
-        <div class="section-side">
-          <h2 class="section-title">Recent Activity</h2>
-          <div class="activity-list">
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text"><strong>Aethelgard Watch</strong> reached a new high valuation.</div>
-                <div class="activity-time">2 hours ago</div>
-              </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 32px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-x: auto;">
+            
+            {% if logs %}
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle);">
+                  <th style="padding: 16px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Timestamp</th>
+                  <th style="padding: 16px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">User</th>
+                  <th style="padding: 16px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Action</th>
+                  <th style="padding: 16px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in logs %}
+                <tr style="border-bottom: 1px solid var(--border-subtle); transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--bg-secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+                  <td style="padding: 16px; color: var(--text-secondary); font-size: 0.9rem;">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                  <td style="padding: 16px; font-weight: 500; color: var(--text-primary);">{{ log.user.first_name }} {{ log.user.last_name }}<br><span style="font-size: 0.75rem; color: var(--text-secondary);">{{ log.user.email }} ({{ log.user.role }})</span></td>
+                  <td style="padding: 16px;">
+                    {% if log.action == 'login' %}
+                      <span style="background: rgba(46, 213, 115, 0.1); color: #2ed573; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Login</span>
+                    {% elif log.action == 'logout' %}
+                      <span style="background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Logout</span>
+                    {% elif log.action == 'create_employee' %}
+                      <span style="background: rgba(55, 66, 250, 0.1); color: #3742fa; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">New Employee</span>
+                    {% else %}
+                      <span style="background: var(--bg-secondary); color: var(--text-secondary); padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">{{ log.action }}</span>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 16px; color: var(--text-secondary); font-size: 0.9rem;">{{ log.details }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div style="text-align: center; padding: 48px;">
+              <div style="color: var(--accent); margin-bottom: 16px; font-size: 2rem;">📋</div>
+              <h4 style="font-family: var(--font-display); font-size: 1.2rem; color: var(--text-primary); margin-bottom: 8px;">No Activity Logs Found</h4>
+              <p style="color: var(--text-secondary); font-size: 0.9rem;">Employee login and store management activity will appear here.</p>
             </div>
-            <div class="activity-item">
-              <div class="activity-icon">◇</div>
-              <div class="activity-content">
-                <div class="activity-text">You added <strong>Obsidian Cuff</strong> to your primary collection.</div>
-                <div class="activity-time">Yesterday</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text">Monthly analytics report is ready to view.</div>
-                <div class="activity-time">3 days ago</div>
-              </div>
-            </div>
+            {% endif %}
+            
           </div>
         </div>
 

@@ -297,7 +297,11 @@
             <p style="font-weight: 600; font-size: 0.9rem; margin: 4px 0 0 0; color: var(--text-primary);">Seller Account</p>
           </div>
           <a href="/profile" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">My Profile</a>
-          <a href="/login" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; color: white !important;">Logout</a>
+          {% if current_user.role == 'seller' %}
+          <a href="/seller/add-employee" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent-light); color: var(--accent-light) !important;">Add Employee</a>
+          {% endif %}
+          <a href="/seller/logs" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">Activity Logs</a>
+          <a href="/logout" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; color: white !important;">Logout</a>
         </div>
       </div>
     </div>
@@ -342,10 +346,14 @@
                 <input type="text" class="form-input" placeholder="e.g. 1920s Patek Philippe Pocket Watch" name="name" required style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
                 <div>
                   <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Price (₱)</label>
                   <input type="number" class="form-input" placeholder="0.00" name="price" required style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Stock</label>
+                  <input type="number" class="form-input" placeholder="1" name="stock" required min="1" value="1" style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
                 </div>
                 <div>
                   <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Category</label>

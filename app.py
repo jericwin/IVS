@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import os
-from models import db, User, Asset, Transaction, Address
+from models import db, User, Asset, Transaction, Address, ActivityLog
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ivs-super-secret-key-123'
@@ -39,6 +39,12 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
+            
+            if user.role in ['seller', 'employee']:
+                log = ActivityLog(user_id=user.id, store_owner_id=user.store_owner_id, action='login', details=f"Logged in via IP {request.remote_addr}")
+                db.session.add(log)
+                db.session.commit()
+                
             if user.role == 'buyer':
                 return redirect(url_for('buyer_dashboard'))
             else:
@@ -78,6 +84,10 @@ def signup():
 @app.route('/logout')
 @login_required
 def logout():
+    if current_user.role in ['seller', 'employee']:
+        log = ActivityLog(user_id=current_user.id, store_owner_id=current_user.store_owner_id, action='logout', details="Logged out")
+        db.session.add(log)
+        db.session.commit()
     logout_user()
     return redirect(url_for('index'))
 
@@ -217,18 +227,18 @@ def buyer_settings():
 @app.route('/seller/dashboard')
 @login_required
 def seller_dashboard():
-    if current_user.role != 'seller':
+    if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer_dashboard'))
-    recent_assets = Asset.query.filter_by(seller_id=current_user.id).order_by(Asset.created_at.desc()).limit(3).all()
+    recent_assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).order_by(Asset.created_at.desc()).limit(3).all()
     return render_template('seller/dashboard.html', assets=recent_assets)
 
 @app.route('/seller/asset/<int:asset_id>')
 @login_required
 def seller_asset_detail(asset_id):
-    if current_user.role != 'seller':
+    if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer_dashboard'))
     asset = Asset.query.get_or_404(asset_id)
-    if asset.seller_id != current_user.id:
+    if asset.seller_id != current_user.store_owner_id:
         flash("You don't have permission to view this asset.")
         return redirect(url_for('seller_listings'))
         
@@ -240,26 +250,32 @@ def seller_asset_detail(asset_id):
 @app.route('/seller/listings')
 @login_required
 def seller_listings():
-    assets = Asset.query.filter_by(seller_id=current_user.id).all()
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer_dashboard'))
+    assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).all()
     return render_template('seller/listings.html', assets=assets)
 
 @app.route('/seller/sales')
 @login_required
 def seller_sales():
-    if current_user.role != 'seller':
+    if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer_dashboard'))
     
     # Get all transactions where the asset belongs to this seller
-    transactions = Transaction.query.join(Asset).filter(Asset.seller_id == current_user.id).order_by(Transaction.date_purchased.desc()).all()
+    transactions = Transaction.query.join(Asset).filter(Asset.seller_id == current_user.store_owner_id).order_by(Transaction.date_purchased.desc()).all()
     
     return render_template('seller/sales.html', transactions=transactions)
 
 @app.route('/seller/add-asset', methods=['GET', 'POST'])
 @login_required
 def seller_add_asset():
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer_dashboard'))
+        
     if request.method == 'POST':
         name = request.form.get('name')
         price = request.form.get('price')
+        stock = request.form.get('stock')
         category = request.form.get('category')
         description = request.form.get('description')
         
@@ -275,12 +291,23 @@ def seller_add_asset():
             # You could add a `document_filename` column to the Asset table later!
             document.save(os.path.join(app.root_path, 'static', 'uploads', document.filename))
         
+        try:
+            parsed_price = float(price) if price else 0.0
+        except ValueError:
+            parsed_price = 0.0
+            
+        try:
+            parsed_stock = int(stock) if stock else 1
+        except ValueError:
+            parsed_stock = 1
+        
         new_asset = Asset(
             name=name,
-            price=float(price) if price else 0.0,
+            price=parsed_price,
+            stock=parsed_stock,
             category=category,
             description=description,
-            seller_id=current_user.id,
+            seller_id=current_user.store_owner_id,
             image_filename=filename
         )
         db.session.add(new_asset)
@@ -291,14 +318,125 @@ def seller_add_asset():
         
     return render_template('seller/add-asset.html')
 
+@app.route('/seller/add-employee', methods=['GET', 'POST'])
+@login_required
+def seller_add_employee():
+    if current_user.role != 'seller':
+        flash('Only store owners can add employees.')
+        return redirect(url_for('seller_dashboard'))
+        
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Check if email exists
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered.')
+            return redirect(url_for('seller_add_employee'))
+            
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_employee = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password_hash=hashed_password,
+            role='employee',
+            employer_id=current_user.id
+        )
+        db.session.add(new_employee)
+        db.session.commit()
+        
+        log = ActivityLog(user_id=current_user.id, store_owner_id=current_user.store_owner_id, action='create_employee', details=f"Created employee account for {first_name} {last_name} ({email})")
+        db.session.add(log)
+        db.session.commit()
+        
+        flash('Employee account created successfully!')
+        return redirect(url_for('seller_add_employee'))
+        
+    employees = User.query.filter_by(role='employee', employer_id=current_user.id).all()
+    return render_template('seller/add-employee.html', employees=employees)
+
+@app.route('/seller/edit-employee/<int:id>', methods=['GET', 'POST'])
+@login_required
+def seller_edit_employee(id):
+    if current_user.role != 'seller':
+        flash('Only store owners can edit employees.')
+        return redirect(url_for('seller_dashboard'))
+        
+    employee = User.query.get_or_404(id)
+    if employee.employer_id != current_user.id:
+        flash("You can only edit your own employees.")
+        return redirect(url_for('seller_dashboard'))
+        
+    if request.method == 'POST':
+        employee.first_name = request.form.get('first_name')
+        employee.last_name = request.form.get('last_name')
+        
+        # Check email if changed
+        new_email = request.form.get('email')
+        if new_email != employee.email and User.query.filter_by(email=new_email).first():
+            flash('Email already registered.')
+            return redirect(url_for('seller_edit_employee', id=id))
+        employee.email = new_email
+            
+        password = request.form.get('password')
+        if password:  # update password only if provided
+            employee.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+            
+        log = ActivityLog(user_id=current_user.id, store_owner_id=current_user.id, action='edit_employee', details=f"Edited employee {employee.first_name} {employee.last_name}")
+        db.session.add(log)
+        db.session.commit()
+        
+        flash('Employee updated successfully!')
+        return redirect(url_for('seller_add_employee'))
+        
+    return render_template('seller/edit-employee.html', employee=employee)
+
+@app.route('/seller/delete-employee/<int:id>', methods=['POST'])
+@login_required
+def seller_delete_employee(id):
+    if current_user.role != 'seller':
+        flash('Only store owners can delete employees.')
+        return redirect(url_for('seller_dashboard'))
+        
+    employee = User.query.get_or_404(id)
+    if employee.employer_id != current_user.id:
+        flash("You can only delete your own employees.")
+        return redirect(url_for('seller_dashboard'))
+        
+    employee_name = f"{employee.first_name} {employee.last_name}"
+    
+    db.session.delete(employee)
+    
+    log = ActivityLog(user_id=current_user.id, store_owner_id=current_user.id, action='delete_employee', details=f"Deleted employee {employee_name}")
+    db.session.add(log)
+    db.session.commit()
+    
+    flash('Employee account deleted successfully.')
+    return redirect(url_for('seller_add_employee'))
+
+@app.route('/seller/logs')
+@login_required
+def seller_logs():
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer_dashboard'))
+    logs = ActivityLog.query.filter_by(store_owner_id=current_user.store_owner_id).order_by(ActivityLog.timestamp.desc()).all()
+    return render_template('seller/logs.html', logs=logs)
+
 @app.route('/seller/analytics')
 @login_required
 def seller_analytics():
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer_dashboard'))
     return render_template('seller/analytics.html')
 
 @app.route('/seller/settings')
 @login_required
 def seller_settings():
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer_dashboard'))
     return render_template('seller/settings.html')
 
 @app.route('/api/chat', methods=['POST'])

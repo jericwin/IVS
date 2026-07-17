@@ -272,11 +272,11 @@
   <nav class="nav" id="navbar">
     <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
-      <a href="/seller/dashboard" style="color: var(--accent);">Overview</a>
+      <a href="/seller/dashboard">Overview</a>
       <a href="/seller/listings">My Listings</a>
       <a href="/seller/sales">My Sales</a>
       <a href="/seller/analytics">Analytics</a>
-      <a href="/seller/settings">Settings</a>
+      <a href="/seller/settings" style="color: var(--accent);">Settings</a>
       <div class="theme-switch-wrapper" style="margin-left: 20px;">
         <label class="theme-switch">
           <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);" class="theme-checkbox" />
@@ -310,96 +310,47 @@
   <div class="dashboard-layout">
     <main class="main-content">
       
-      <div class="dashboard-header">
-        <h1 class="dashboard-title">Welcome back, Seller.</h1>
-        <p class="dashboard-subtitle">Here's what's happening with your listings today.</p>
+      <div class="dashboard-header" style="margin-bottom: 24px;">
+        <h1 class="dashboard-title">Edit Employee</h1>
+        <p class="dashboard-subtitle">Update account details for {{ employee.first_name }} {{ employee.last_name }}.</p>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Listed Assets</div>
-          <div class="stat-value">24</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Sales Volume</div>
-          <div class="stat-value">₱145,200</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Store Views</div>
-          <div class="stat-value">12,892</div>
-        </div>
-      </div>
-
-      <div class="dashboard-sections">
+      <div class="dashboard-sections" style="grid-template-columns: 1fr; max-width: 800px;">
         
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div style="grid-column: 1 / -1;">
-            {% for message in messages %}
-              <div style="background: var(--accent); color: var(--bg-primary); padding: 16px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; text-align: center;">
-                {{ message }}
-              </div>
-            {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        
-        <!-- Main Panel: Recent Additions -->
-        <div class="section-main">
-          <h2 class="section-title">Recent Listings</h2>
-          <div class="collection-grid">
-            {% for asset in assets %}
-            <a href="/seller/asset/{{ asset.id }}" style="text-decoration: none; color: inherit;">
-              <div class="collection-item">
-                <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
-                <div class="collection-info">
-                  {% if asset.status == 'Sold' %}
-                  <div style="position: absolute; top: 16px; right: 16px; background: var(--accent); color: var(--bg-primary); padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase;">Sold</div>
-                  {% endif %}
-                  <div class="collection-name">{{ asset.name }}</div>
-                  <div class="collection-meta">₱{{ "{:,.2f}".format(asset.price) }}</div>
+        <form class="section-main" method="POST" action="/seller/edit-employee/{{ employee.id }}">
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 48px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h3 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; color: var(--accent-light);">Employee Details</h3>
+            
+            <div style="display: grid; gap: 24px; margin-bottom: 48px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                  <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">First Name</label>
+                  <input type="text" class="form-input" placeholder="Juan" name="first_name" required value="{{ employee.first_name }}" style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Last Name</label>
+                  <input type="text" class="form-input" placeholder="Dela Cruz" name="last_name" required value="{{ employee.last_name }}" style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
                 </div>
               </div>
-            </a>
-            {% endfor %}
-            <!-- Add New Asset Button -->
-            <a href="/seller/add-asset" class="collection-item" style="border: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: center; text-align: center; background: transparent; cursor: pointer; text-decoration: none; transition: 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
-               <div style="z-index: 2;">
-                 <div style="font-size: 2rem; color: var(--accent); margin-bottom: 10px;">+</div>
-                 <div style="font-size: 0.9rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);">Add New Asset</div>
-               </div>
-            </a>
-          </div>
-        </div>
 
-        <!-- Side Panel: Recent Activity -->
-        <div class="section-side">
-          <h2 class="section-title">Recent Activity</h2>
-          <div class="activity-list">
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text"><strong>Aethelgard Watch</strong> reached a new high valuation.</div>
-                <div class="activity-time">2 hours ago</div>
+              <div>
+                <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Email Address</label>
+                <input type="email" class="form-input" placeholder="employee@store.com" name="email" required value="{{ employee.email }}" style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
+              </div>
+              
+              <div>
+                <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 12px; font-weight: 600;">Reset Password (Optional)</label>
+                <input type="password" class="form-input" placeholder="Enter new password" name="password" style="border-radius: 6px; padding: 16px; background: var(--bg-secondary);">
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px;">Leave blank to keep the current password.</p>
               </div>
             </div>
-            <div class="activity-item">
-              <div class="activity-icon">◇</div>
-              <div class="activity-content">
-                <div class="activity-text">You added <strong>Obsidian Cuff</strong> to your primary collection.</div>
-                <div class="activity-time">Yesterday</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text">Monthly analytics report is ready to view.</div>
-                <div class="activity-time">3 days ago</div>
-              </div>
+
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 32px; display: flex; justify-content: flex-end; gap: 16px;">
+              <a href="/seller/add-employee" style="text-decoration: none; padding: 16px 32px; border-radius: 6px; font-size: 0.9rem; color: var(--text-primary); border: 1px solid var(--border-subtle); transition: 0.3s;" onmouseover="this.style.borderColor='var(--text-secondary)'" onmouseout="this.style.borderColor='var(--border-subtle)'">Cancel</a>
+              <button type="submit" class="auth-btn" style="width: auto; padding: 16px 40px; border-radius: 6px; font-size: 0.9rem;">Save Changes</button>
             </div>
           </div>
-        </div>
-
+        </form>
       </div>
 
     </main>
@@ -408,5 +359,7 @@
   <script src="/static/theme.js"></script>
 </body>
 </html>
+
+
 
 
