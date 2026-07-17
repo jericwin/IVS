@@ -19,9 +19,27 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Auto-create all tables on startup (needed for SQLite on Render)
+# Auto-create all tables and seed default accounts on startup
 with app.app_context():
     db.create_all()
+
+    from models import User
+    from werkzeug.security import generate_password_hash
+
+    def seed_user(first, last, email, password, role, employer_id=None):
+        if not User.query.filter_by(email=email).first():
+            u = User(
+                first_name=first, last_name=last, email=email,
+                password_hash=generate_password_hash(password, method='pbkdf2:sha256'),
+                role=role, employer_id=employer_id
+            )
+            db.session.add(u)
+            db.session.commit()
+
+    seed_user('Admin', 'Seller',  'seller@ivs.com',           'seller123',  'seller')
+    seed_user('Jeric', 'Punay',   'punay.jeric@gmail.com',    'jeric123',   'seller')
+    seed_user('Jasmine', 'Araza', 'jasmine.araza@gmail.com',  'jasmine123', 'buyer')
+    seed_user('Urahara', 'Kisuke','uarhara.kisuke@gmail.com', 'kisuke123',  'buyer')
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
