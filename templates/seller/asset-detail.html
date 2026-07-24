@@ -189,15 +189,6 @@
             {% endwith %}
 
             <div style="display: flex; flex-direction: column; gap: 16px;">
-              <form action="/seller/feature-collection/{{ asset.id }}" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                {% if asset.is_featured_collection %}
-                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">Remove from 'The Collection'</button>
-                {% else %}
-                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px;">Feature in 'The Collection'</button>
-                {% endif %}
-              </form>
-
               <form action="/seller/feature-story/{{ asset.id }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 {% if asset.is_featured_story %}

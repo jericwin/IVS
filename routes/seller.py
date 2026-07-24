@@ -48,8 +48,10 @@ def seller_feature_collection(asset_id):
     if not asset.is_featured_collection:
         count = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_collection=True).count()
         if count >= 4:
-            flash("You can only feature up to 4 items in The Collection.")
-            return redirect(url_for('seller.seller_listings'))
+            # Un-feature the oldest featured item (proxy by created_at or id)
+            oldest_featured = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_collection=True).order_by(Asset.id.asc()).first()
+            if oldest_featured:
+                oldest_featured.is_featured_collection = False
         asset.is_featured_collection = True
     else:
         asset.is_featured_collection = False

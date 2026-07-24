@@ -352,18 +352,31 @@
             </a>
             
             {% for asset in assets %}
-            <a href="/seller/asset/{{ asset.id }}" style="text-decoration: none; color: inherit;">
-              <div class="collection-item">
-                <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
-                <div class="collection-info">
-                  {% if asset.status == 'Sold' %}
-                  <div style="position: absolute; top: 16px; right: 16px; background: var(--accent); color: var(--bg-primary); padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase;">Sold</div>
-                  {% endif %}
-                  <div class="collection-name">{{ asset.name }}</div>
-                  <div class="collection-meta">₱{{ "{:,.2f}".format(asset.price) }}</div>
-                </div>
+            <div class="collection-item">
+              <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+              
+              <!-- Star Button for Collection Feature -->
+              <div style="position: absolute; top: 16px; left: 16px; z-index: 10;">
+                <form action="/seller/feature-collection/{{ asset.id }}" method="POST" style="margin: 0;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" title="Toggle Feature in The Collection">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="{% if asset.is_featured_collection %}var(--accent){% else %}none{% endif %}" stroke="{% if asset.is_featured_collection %}var(--accent){% else %}#fff{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                  </button>
+                </form>
               </div>
-            </a>
+
+              <div class="collection-info">
+                {% if asset.status == 'Sold' %}
+                <div style="position: absolute; top: 16px; right: 16px; background: var(--accent); color: var(--bg-primary); padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase;">Sold</div>
+                {% endif %}
+                <div class="collection-name">{{ asset.name }}</div>
+                <div class="collection-meta">₱{{ "{:,.2f}".format(asset.price) }}</div>
+              </div>
+              
+              <a href="/seller/asset/{{ asset.id }}" style="position: absolute; inset: 0; z-index: 5;"></a>
+            </div>
             {% endfor %}
           </div>
         </div>
