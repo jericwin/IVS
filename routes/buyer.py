@@ -15,7 +15,7 @@ def buyer_dashboard():
 @buyer_bp.route('/buyer/marketplace')
 @login_required
 def buyer_marketplace():
-    assets = Asset.query.filter_by(status='Active').all()
+    assets = Asset.query.filter_by(status='Active').order_by(Asset.created_at.desc()).all()
     return render_template('buyer/marketplace.html', assets=assets)
 
 @buyer_bp.route('/buyer/purchases')
@@ -56,12 +56,14 @@ def buyer_checkout(asset_id):
             return redirect(url_for('buyer.buyer_checkout', asset_id=asset_id))
             
         payment_method = request.form.get('payment_method')
+        variation = request.form.get('variation')
         asset.status = 'Sold'
         transaction = Transaction(
             asset_id=asset.id, 
             buyer_id=current_user.id,
             address_id=selected_address_id,
-            payment_method=payment_method
+            payment_method=payment_method,
+            variation_name=variation
         )
         db.session.add(transaction)
         db.session.commit()
@@ -72,7 +74,9 @@ def buyer_checkout(asset_id):
     addresses = Address.query.filter_by(user_id=current_user.id).all()
     default_address = next((a for a in addresses if a.is_default), addresses[0] if addresses else None)
     
-    return render_template('buyer/checkout.html', asset=asset, addresses=addresses, default_address=default_address)
+    variation = request.args.get('variation')
+    
+    return render_template('buyer/checkout.html', asset=asset, addresses=addresses, default_address=default_address, variation=variation)
 
 @buyer_bp.route('/buyer/settings')
 @login_required

@@ -30,6 +30,12 @@ class Address(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     recipient_name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
+    province = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    barangay = db.Column(db.String(100), nullable=True)
+    street = db.Column(db.String(100), nullable=True)
+    house_number = db.Column(db.String(50), nullable=True)
+    zipcode = db.Column(db.String(20), nullable=True)
     street_address = db.Column(db.Text, nullable=False)
     is_default = db.Column(db.Boolean, default=False)
 
@@ -47,15 +53,26 @@ class Asset(db.Model):
     views = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    variations = db.relationship('AssetVariation', backref='asset', lazy=True, cascade='all, delete-orphan')
     transaction = db.relationship('Transaction', backref='asset', uselist=False)
+
+class AssetVariation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.Integer, db.ForeignKey('asset.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    image_filename = db.Column(db.String(100), nullable=False)
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     asset_id = db.Column(db.Integer, db.ForeignKey('asset.id'), nullable=False)
+    variation_name = db.Column(db.String(100), nullable=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'), nullable=True)
     payment_method = db.Column(db.String(50), nullable=True)
     date_purchased = db.Column(db.DateTime, default=datetime.utcnow)
+    delivery_status = db.Column(db.String(50), default='Pending')
+    delivery_evidence_filename = db.Column(db.String(100), nullable=True)
     
     address = db.relationship('Address', backref='transactions')
 

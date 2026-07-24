@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in - Google Accounts</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .google-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      width: 448px;
+      padding: 48px 40px 36px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .google-logo {
+      width: 75px;
+      margin-bottom: 16px;
+    }
+    .google-title {
+      font-size: 24px;
+      font-weight: 400;
+      margin: 0 0 8px;
+      color: #202124;
+    }
+    .google-subtitle {
+      font-size: 16px;
+      color: #202124;
+      margin: 0 0 32px;
+    }
+    .account-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .account-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid #dadce0;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: left;
+    }
+    .account-item:last-child {
+      border-bottom: none;
+    }
+    .account-item:hover {
+      background: #f8f9fa;
+    }
+    .account-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1a73e8;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 500;
+      font-size: 14px;
+      margin-right: 12px;
+    }
+    .account-details {
+      flex: 1;
+    }
+    .account-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #3c4043;
+      margin-bottom: 2px;
+    }
+    .account-email {
+      font-size: 12px;
+      color: #5f6368;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="google-card">
+    <svg class="google-logo" viewBox="0 0 74 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9.44 11.73l-.06.26c-.73 3.32-3.66 5.86-7.14 5.86-4.04 0-7.3-3.26-7.3-7.3s3.26-7.3 7.3-7.3c1.9 0 3.63.73 4.93 1.93l2.25-2.25C7.57.94 5.23 0 2.24 0 1.01 0 0 1.01 0 2.24s1.01 2.24 2.24 2.24c2.81 0 5.17-.93 6.9-2.52l-3.78-2.96c-.94.63-2.14 1-3.12 1-2.4 0-4.44-1.62-5.17-3.8H3.01v3A10 10 0 0012 22z" fill="#ea4335" transform="translate(1 1)"/>
+      <path d="M2.24 4.48c-2.4 0-4.44 1.62-5.17 3.8H3.01v-3C3.74 3.1 5.78 1.48 8.18 1.48c1.9 0 3.63.73 4.93 1.93l2.25-2.25C13.46 2.06 10.96 0 8.18 0 4.14 0 .88 3.26.88 7.3s3.26 7.3 7.3 7.3c1.02 0 1.99-.2 2.88-.56v-2.88c-.89.36-1.86.56-2.88.56-4.04 0-7.3-3.26-7.3-7.3v-.02z" fill="#fbbc05" transform="translate(1 1)"/>
+      <path d="M12 22c2.81 0 5.17-.93 6.9-2.52l-3.78-2.96c-.94.63-2.14 1-3.12 1-2.4 0-4.44-1.62-5.17-3.8H3.01v3A10 10 0 0012 22z" fill="#34a853" transform="translate(1 1)"/>
+      <path d="M22 12c0-.83-.08-1.64-.23-2.42H12v4.58h5.66c-.25 1.48-1.09 2.73-2.34 3.57v2.96h3.78C21.32 18.66 22 15.54 22 12z" fill="#4285f4" transform="translate(1 1)"/>
+    </svg>
+    <h1 class="google-title">Choose an account</h1>
+    <p class="google-subtitle">to continue to IVS</p>
+    
+    <ul class="account-list">
+      {% for u in users %}
+      <li class="account-item" onclick="document.getElementById('form-{{ loop.index }}').submit();">
+        <div class="account-avatar">{{ u.first_name[0] }}</div>
+        <div class="account-details">
+          <div class="account-name">{{ u.first_name }} {{ u.last_name }}</div>
+          <div class="account-email">{{ u.email }}</div>
+        </div>
+        <form id="form-{{ loop.index }}" action="/login/google/callback" method="POST" style="display:none;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="email" value="{{ u.email }}">
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    
+    <div style="margin-top: 24px; font-size: 12px; color: #5f6368; display: flex; justify-content: space-between;">
+      <span>English (United States)</span>
+      <span style="display: flex; gap: 16px;">
+        <a href="#" style="color: #5f6368; text-decoration: none;">Help</a>
+        <a href="#" style="color: #5f6368; text-decoration: none;">Privacy</a>
+        <a href="#" style="color: #5f6368; text-decoration: none;">Terms</a>
+      </span>
+    </div>
+  </div>
+
+</body>
+</html>

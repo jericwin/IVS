@@ -391,10 +391,221 @@
               <div class="profile-form-label">Phone Number</div>
               <input type="text" name="phone" class="profile-form-input" required placeholder="(+63) 912 345 6789">
             </div>
-            <div class="profile-form-row" style="align-items: flex-start;">
-              <div class="profile-form-label" style="margin-top: 8px;">Street Address</div>
-              <textarea name="street_address" class="profile-form-textarea" required placeholder="House/Unit No., Street, Barangay, City/Municipality, Province, Zip Code"></textarea>
+            <div class="profile-form-row">
+              <div class="profile-form-label">Province/State</div>
+              <select id="province" name="province" class="profile-form-input" required onchange="loadCities()">
+                <option value="" disabled selected>Select Province...</option>
+              </select>
             </div>
+            <div class="profile-form-row">
+              <div class="profile-form-label">City/Town</div>
+              <select id="city" name="city" class="profile-form-input" required onchange="loadBarangays()" disabled>
+                <option value="" disabled selected>Select City...</option>
+              </select>
+            </div>
+            <div class="profile-form-row">
+              <div class="profile-form-label">Barangay</div>
+              <select id="barangay" name="barangay" class="profile-form-input" required disabled>
+                <option value="" disabled selected>Select Barangay...</option>
+              </select>
+            </div>
+            <div class="profile-form-row">
+              <div class="profile-form-label">Street</div>
+              <input type="text" id="street" name="street" class="profile-form-input" required placeholder="Street Name">
+            </div>
+            <div class="profile-form-row">
+              <div class="profile-form-label">House/Unit No.</div>
+              <input type="text" id="house_number" name="house_number" class="profile-form-input" required placeholder="House or Unit Number">
+            </div>
+            <div class="profile-form-row">
+              <div class="profile-form-label">Zipcode</div>
+              <input type="text" id="zipcode" name="zipcode" class="profile-form-input" required placeholder="Zip Code">
+            </div>
+            
+            <div class="profile-form-row">
+              <div class="profile-form-label"></div>
+              <div>
+                <a href="#" onclick="getCurrentLocation(event)" class="auth-btn" style="display: inline-block; padding: 8px 16px; margin: 0; font-size: 0.8rem; width: auto; background: var(--bg-secondary); color: var(--accent); border: 1px solid var(--accent); text-decoration: none;">+ Auto-fill current location</a>
+                <div id="location-loading" style="display: none; font-size: 0.8rem; color: var(--accent); margin-top: 8px;">Fetching location...</div>
+              </div>
+            </div>
+            
+            <script>
+            // PSGC API integration
+            const psgcBase = 'https://psgc.gitlab.io/api';
+            
+            async function loadProvinces() {
+              try {
+                const res = await fetch(`${psgcBase}/provinces/`);
+                let provinces = await res.json();
+                
+                // Sort alphabetically
+                provinces.sort((a, b) => a.name.localeCompare(b.name));
+                
+                const provSelect = document.getElementById('province');
+                
+                // Add Metro Manila manually since it's a region, not a province
+                const ncrOption = document.createElement('option');
+                ncrOption.value = 'NCR';
+                ncrOption.dataset.code = '130000000';
+                ncrOption.textContent = 'Metro Manila (NCR)';
+                provSelect.appendChild(ncrOption);
+                
+                provinces.forEach(p => {
+                  const opt = document.createElement('option');
+                  opt.value = p.name;
+                  opt.dataset.code = p.code;
+                  opt.textContent = p.name;
+                  provSelect.appendChild(opt);
+                });
+              } catch (e) {
+                console.error('Failed to load provinces:', e);
+              }
+            }
+            
+            async function loadCities() {
+              const provSelect = document.getElementById('province');
+              const citySelect = document.getElementById('city');
+              const brgySelect = document.getElementById('barangay');
+              
+              citySelect.innerHTML = '<option value="" disabled selected>Select City...</option>';
+              brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay...</option>';
+              citySelect.disabled = true;
+              brgySelect.disabled = true;
+              
+              const selectedOption = provSelect.options[provSelect.selectedIndex];
+              if (!selectedOption || !selectedOption.dataset.code) return;
+              
+              const code = selectedOption.dataset.code;
+              let url = `${psgcBase}/provinces/${code}/cities-municipalities/`;
+              if (code === '130000000') {
+                url = `${psgcBase}/regions/${code}/cities-municipalities/`;
+              }
+              
+              try {
+                const res = await fetch(url);
+                let cities = await res.json();
+                cities.sort((a, b) => a.name.localeCompare(b.name));
+                
+                cities.forEach(c => {
+                  const opt = document.createElement('option');
+                  opt.value = c.name;
+                  opt.dataset.code = c.code;
+                  opt.textContent = c.name;
+                  citySelect.appendChild(opt);
+                });
+                citySelect.disabled = false;
+              } catch (e) {
+                console.error('Failed to load cities:', e);
+              }
+            }
+            
+            async function loadBarangays() {
+              const citySelect = document.getElementById('city');
+              const brgySelect = document.getElementById('barangay');
+              const provSelect = document.getElementById('province');
+              const zipcodeInput = document.getElementById('zipcode');
+              
+              brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay...</option>';
+              brgySelect.disabled = true;
+              
+              const selectedOption = citySelect.options[citySelect.selectedIndex];
+              if (!selectedOption || !selectedOption.dataset.code) return;
+              
+              const code = selectedOption.dataset.code;
+              try {
+                // Fetch barangays
+                const res = await fetch(`${psgcBase}/cities-municipalities/${code}/barangays/`);
+                let brgys = await res.json();
+                brgys.sort((a, b) => a.name.localeCompare(b.name));
+                
+                brgys.forEach(b => {
+                  const opt = document.createElement('option');
+                  opt.value = b.name;
+                  opt.textContent = b.name;
+                  brgySelect.appendChild(opt);
+                });
+                brgySelect.disabled = false;
+                
+                // Attempt to auto-fill zip code using Nominatim
+                const cityName = selectedOption.textContent;
+                const provName = provSelect.options[provSelect.selectedIndex].textContent;
+                
+                // Show brief loading in zipcode field
+                const oldZip = zipcodeInput.value;
+                zipcodeInput.placeholder = "Finding zipcode...";
+                
+                const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(cityName)}&state=${encodeURIComponent(provName)}&country=Philippines&format=json&addressdetails=1`);
+                const nomData = await nomRes.json();
+                
+                if (nomData && nomData.length > 0 && nomData[0].address && nomData[0].address.postcode) {
+                  zipcodeInput.value = nomData[0].address.postcode;
+                } else {
+                  // Fallback for NCR or if state/city combo fails
+                  const nomRes2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName + ', Philippines')}&format=json&addressdetails=1`);
+                  const nomData2 = await nomRes2.json();
+                  if (nomData2 && nomData2.length > 0 && nomData2[0].address && nomData2[0].address.postcode) {
+                    zipcodeInput.value = nomData2[0].address.postcode;
+                  }
+                }
+                zipcodeInput.placeholder = "Zip Code";
+                
+              } catch (e) {
+                console.error('Failed to load barangays or zipcode:', e);
+                zipcodeInput.placeholder = "Zip Code";
+              }
+            }
+            
+            // Auto-fill logic
+            function getCurrentLocation(e) {
+              e.preventDefault();
+              const loadingEl = document.getElementById('location-loading');
+              
+              if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+              }
+              
+              loadingEl.style.display = 'block';
+              
+              navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                  try {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await response.json();
+                    
+                    if (data && data.address) {
+                      const addr = data.address;
+                      if (addr.road) document.getElementById('street').value = addr.road;
+                      if (addr.house_number) document.getElementById('house_number').value = addr.house_number;
+                      if (addr.postcode) document.getElementById('zipcode').value = addr.postcode;
+                      
+                      alert('Auto-filled what we could from your GPS. Please manually select the Province/City/Barangay from the dropdowns to ensure accuracy.');
+                    } else {
+                      alert('Could not determine address from location.');
+                    }
+                  } catch (error) {
+                    console.error('Error fetching address:', error);
+                    alert('Error getting address from coordinates.');
+                  } finally {
+                    loadingEl.style.display = 'none';
+                  }
+                },
+                (error) => {
+                  loadingEl.style.display = 'none';
+                  console.error('Geolocation error:', error);
+                  alert('Unable to retrieve your location. Please check your browser permissions.');
+                }
+              );
+            }
+            
+            // Init
+            window.addEventListener('DOMContentLoaded', () => {
+              loadProvinces();
+            });
+            </script>
             <div class="profile-submit-row" style="margin-top: 24px;">
               <div class="profile-submit-label"></div>
               <div style="display: flex; gap: 12px;">

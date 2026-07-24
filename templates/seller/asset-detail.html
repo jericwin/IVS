@@ -139,7 +139,28 @@
         <!-- Left Column: Details -->
         <div class="section-main">
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 32px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 32px;">
-            <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 4px; margin-bottom: 32px; background: var(--bg-secondary); padding: 16px;" onerror="this.src='/static/images/product-1.png'">
+            <div style="position: relative;">
+              {% if asset.variations and asset.variations|length > 1 %}
+                <button type="button" onclick="cycleVariation(-1)" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&larr;</button>
+              {% endif %}
+              <img id="mainAssetImage" src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 4px; margin-bottom: 32px; background: var(--bg-secondary); padding: 16px;" onerror="this.src='/static/images/product-1.png'">
+              {% if asset.variations and asset.variations|length > 1 %}
+                <button type="button" onclick="cycleVariation(1)" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&rarr;</button>
+              {% endif %}
+            </div>
+            
+            {% if asset.variations and asset.variations|length > 0 %}
+            <div style="margin-bottom: 32px;">
+              <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 12px;">Variations</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                {% for var in asset.variations %}
+                  <button type="button" class="variation-btn" onclick="selectVariation(this, '{{ var.name }}', '{{ var.image_filename }}')" style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 20px; color: var(--text-primary); cursor: pointer; font-weight: 500; transition: 0.2s;">
+                    {{ var.name }}
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
             
             <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 16px; color: var(--accent-light);">Description</h3>
             <p style="color: var(--text-secondary); line-height: 1.8; font-size: 1rem;">
@@ -173,6 +194,7 @@
                 <div style="color: var(--text-primary); font-weight: 500; font-size: 1.1rem;">{{ asset.category }}</div>
               </div>
               
+              {% if request.args.get('from') != 'sales' %}
               <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
                 <a href="/seller/edit-asset/{{ asset.id }}" class="auth-btn" style="width: 100%; text-align: center; margin-top:0; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important; text-decoration: none;">Edit Details</a>
                 <form action="/seller/delete-asset/{{ asset.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this asset? This action cannot be undone.');">
@@ -180,6 +202,7 @@
                   <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: transparent; border: 1px solid #f44336; color: #f44336 !important;">Delete Asset</button>
                 </form>
               </div>
+              {% endif %}
             </div>
           </div>
           
@@ -228,5 +251,42 @@
   </div>
 
   <script src="/static/theme.js"></script>
+  <script>
+    let currentVarIndex = 0;
+    const variationButtons = [];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = document.querySelectorAll('.variation-btn');
+      buttons.forEach(b => variationButtons.push(b));
+      if (variationButtons.length > 0) {
+        variationButtons[0].click();
+      }
+    });
+
+    function selectVariation(btn, name, imageFilename) {
+      const buttons = document.querySelectorAll('.variation-btn');
+      buttons.forEach((b, index) => {
+        b.style.borderColor = 'var(--border-subtle)';
+        b.style.color = 'var(--text-primary)';
+        if (b === btn) {
+          currentVarIndex = index;
+        }
+      });
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+      
+      if (imageFilename) {
+        document.getElementById('mainAssetImage').src = '/static/uploads/' + imageFilename;
+      }
+    }
+    
+    function cycleVariation(direction) {
+      if (variationButtons.length === 0) return;
+      currentVarIndex += direction;
+      if (currentVarIndex < 0) currentVarIndex = variationButtons.length - 1;
+      if (currentVarIndex >= variationButtons.length) currentVarIndex = 0;
+      variationButtons[currentVarIndex].click();
+    }
+  </script>
 </body>
 </html>

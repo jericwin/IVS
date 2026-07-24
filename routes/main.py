@@ -35,7 +35,14 @@ def profile_addresses():
     if request.method == 'POST':
         recipient_name = request.form.get('recipient_name')
         phone = request.form.get('phone')
-        street_address = request.form.get('street_address')
+        province = request.form.get('province')
+        city = request.form.get('city')
+        barangay = request.form.get('barangay')
+        street = request.form.get('street')
+        house_number = request.form.get('house_number')
+        zipcode = request.form.get('zipcode')
+        
+        street_address = f"{house_number} {street}, {barangay}, {city}, {province} {zipcode}"
         
         existing = Address.query.filter_by(user_id=current_user.id).count()
         is_default = (existing == 0)
@@ -44,6 +51,12 @@ def profile_addresses():
             user_id=current_user.id,
             recipient_name=recipient_name,
             phone=phone,
+            province=province,
+            city=city,
+            barangay=barangay,
+            street=street,
+            house_number=house_number,
+            zipcode=zipcode,
             street_address=street_address,
             is_default=is_default
         )

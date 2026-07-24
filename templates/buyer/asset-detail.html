@@ -177,8 +177,16 @@
       </a>
 
       <div class="asset-detail-grid">
-        <div class="asset-image-container">
-          <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+        <div class="asset-image-container" style="position: relative;">
+          {% if asset.variations and asset.variations|length > 1 %}
+            <button type="button" onclick="cycleVariation(-1)" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&larr;</button>
+          {% endif %}
+          
+          <img id="mainAssetImage" src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+          
+          {% if asset.variations and asset.variations|length > 1 %}
+            <button type="button" onclick="cycleVariation(1)" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&rarr;</button>
+          {% endif %}
         </div>
         
         <div class="asset-info">
@@ -199,11 +207,27 @@
               <div style="font-weight: 600;">{{ asset.seller.first_name }} {{ asset.seller.last_name }}</div>
             </div>
           </div>
+          
+          {% if asset.variations and asset.variations|length > 0 %}
+          <div style="margin-bottom: 32px;">
+            <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 12px;">Variations</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              {% for var in asset.variations %}
+                <button type="button" class="variation-btn" onclick="selectVariation(this, '{{ var.name }}', '{{ var.image_filename }}')" style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 20px; color: var(--text-primary); cursor: pointer; font-weight: 500; transition: 0.2s;">
+                  {{ var.name }}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
 
           {% if asset.status == 'Active' %}
-          <a href="/buyer/checkout/{{ asset.id }}" class="auth-btn" style="text-align: center; display: block; text-decoration: none; font-size: 1.1rem; padding: 16px;">
-            Buy Now
-          </a>
+          <form id="checkoutForm" action="/buyer/checkout/{{ asset.id }}" method="GET">
+            <input type="hidden" name="variation" id="selectedVariation" value="{% if asset.variations %}{{ asset.variations[0].name }}{% endif %}">
+            <button type="button" onclick="submitCheckout()" class="auth-btn" style="width: 100%; text-align: center; display: block; font-size: 1.1rem; padding: 16px; border: none; cursor: pointer;">
+              Buy Now
+            </button>
+          </form>
           {% else %}
           <button class="auth-btn" disabled style="background: var(--bg-card); border-color: var(--border-subtle); color: var(--text-secondary); cursor: not-allowed;">
             Item Sold
@@ -215,6 +239,62 @@
     </main>
   </div>
 
+  <script>
+    let currentVarIndex = 0;
+    const variationButtons = [];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = document.querySelectorAll('.variation-btn');
+      buttons.forEach(b => variationButtons.push(b));
+    });
+
+    function selectVariation(btn, name, imageFilename) {
+      // Update buttons
+      const buttons = document.querySelectorAll('.variation-btn');
+      buttons.forEach((b, index) => {
+        b.style.borderColor = 'var(--border-subtle)';
+        b.style.color = 'var(--text-primary)';
+        if (b === btn) {
+          currentVarIndex = index;
+        }
+      });
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+      
+      // Update hidden input
+      document.getElementById('selectedVariation').value = name;
+      
+      // Update main image
+      if (imageFilename) {
+        document.getElementById('mainAssetImage').src = '/static/uploads/' + imageFilename;
+      }
+    }
+    
+    function cycleVariation(direction) {
+      if (variationButtons.length === 0) return;
+      currentVarIndex += direction;
+      if (currentVarIndex < 0) currentVarIndex = variationButtons.length - 1;
+      if (currentVarIndex >= variationButtons.length) currentVarIndex = 0;
+      variationButtons[currentVarIndex].click();
+    }
+    
+    function submitCheckout() {
+      const variationInput = document.getElementById('selectedVariation');
+      if (document.querySelectorAll('.variation-btn').length > 0 && !variationInput.value) {
+        alert("Please select a variation first.");
+        return;
+      }
+      document.getElementById('checkoutForm').submit();
+    }
+    
+    // Auto-select first variation if it exists
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstVarBtn = document.querySelector('.variation-btn');
+      if (firstVarBtn) {
+        firstVarBtn.click();
+      }
+    });
+  </script>
   <script src="/static/theme.js"></script>
   {% include 'chatbot.html' %}
 </body>

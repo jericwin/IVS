@@ -323,20 +323,29 @@
             <h3 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; color: var(--accent-light);">Asset Media</h3>
             
             <div style="margin-bottom: 48px;">
-              <label id="imageUploadLabel" style="border: 2px dashed var(--border-subtle); border-radius: 8px; padding: 60px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: var(--bg-secondary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'; this.style.backgroundColor='var(--bg-card)'" onmouseout="this.style.borderColor='var(--border-subtle)'; this.style.backgroundColor='var(--bg-secondary)'">
-                
-                <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
-                
-                <div id="imagePlaceholder" style="transition: 0.3s;">
-                  <div style="color: var(--accent); margin-bottom: 16px; display: flex; justify-content: center;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h4 style="font-size: 1.2rem; margin: 0;">Product Variations & Images</h4>
+                <button type="button" onclick="addVariation()" class="auth-btn" style="width: auto; margin: 0; padding: 8px 16px; font-size: 0.9rem;">+ Add Variation</button>
+              </div>
+              
+              <div id="variationsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- First Default Variation -->
+                <div class="variation-row" style="display: flex; gap: 16px; align-items: flex-end; background: var(--bg-secondary); padding: 16px; border: 1px solid var(--border-subtle); border-radius: 8px;">
+                  <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600;">Variation Name (e.g. Red, Size L)</label>
+                    <input type="text" name="variation_name[]" placeholder="Main Variation" required style="width: 100%; padding: 16px; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 4px; color: var(--text-primary); font-size: 1rem; box-sizing: border-box;">
                   </div>
-                  <h4 style="font-size: 1.2rem; margin-bottom: 8px;">Upload High-Resolution Images</h4>
-                  <p style="color: var(--text-secondary); font-size: 0.9rem;">Drag and drop or click to browse. Max size 10MB.</p>
+                  <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600;">Image</label>
+                    <label style="border: 2px dashed var(--border-subtle); border-radius: 4px; height: 55px; text-align: center; cursor: pointer; background: var(--bg-primary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+                      <input type="file" name="variation_image[]" accept="image/*" required onchange="previewVariationImage(this)" style="display: none;">
+                      <div class="var-image-placeholder" style="color: var(--text-secondary); font-size: 0.8rem; padding-top: 18px;">+ Upload Image</div>
+                      <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    </label>
+                  </div>
+                  <button type="button" onclick="this.parentElement.remove()" style="padding: 16px; background: transparent; border: 1px solid red; color: red; border-radius: 4px; cursor: pointer; height: 55px;">Remove</button>
                 </div>
-                
-                <img id="imagePreview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2;">
-              </label>
+              </div>
             </div>
 
             <h3 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; color: var(--accent-light);">Asset Details</h3>
@@ -402,14 +411,45 @@
 
   <script>
     function previewImage(event) {
-      var reader = new FileReader();
-      reader.onload = function(){
-        var output = document.getElementById('imagePreview');
-        output.src = reader.result;
-        output.style.display = 'block';
-        document.getElementById('imagePlaceholder').style.opacity = '0';
-      };
-      reader.readAsDataURL(event.target.files[0]);
+      // Retained for any other use
+    }
+    
+    function addVariation() {
+      const container = document.getElementById('variationsContainer');
+      const row = document.createElement('div');
+      row.className = 'variation-row';
+      row.style.cssText = 'display: flex; gap: 16px; align-items: flex-end; background: var(--bg-secondary); padding: 16px; border: 1px solid var(--border-subtle); border-radius: 8px; margin-top: 16px;';
+      
+      row.innerHTML = `
+        <div style="flex: 1;">
+          <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600;">Variation Name</label>
+          <input type="text" name="variation_name[]" placeholder="e.g. Blue" required style="width: 100%; padding: 16px; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 4px; color: var(--text-primary); font-size: 1rem; box-sizing: border-box;">
+        </div>
+        <div style="flex: 1;">
+          <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600;">Image</label>
+          <label style="border: 2px dashed var(--border-subtle); border-radius: 4px; height: 55px; text-align: center; cursor: pointer; background: var(--bg-primary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+            <input type="file" name="variation_image[]" accept="image/*" required onchange="previewVariationImage(this)" style="display: none;">
+            <div class="var-image-placeholder" style="color: var(--text-secondary); font-size: 0.8rem; padding-top: 18px;">+ Upload Image</div>
+            <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+          </label>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="padding: 16px; background: transparent; border: 1px solid red; color: red; border-radius: 4px; cursor: pointer; height: 55px;">Remove</button>
+      `;
+      container.appendChild(row);
+    }
+    
+    function previewVariationImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = input.parentElement.querySelector('.var-image-preview');
+          const placeholder = input.parentElement.querySelector('.var-image-placeholder');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          if(placeholder) placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
     }
     
     function previewDoc(event) {

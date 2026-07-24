@@ -183,8 +183,9 @@
     }
 
     .collection-item:hover img {
-      transform: scale(1.05);
-      opacity: 0.8;
+      object-fit: contain;
+      background: var(--bg-primary); /* to fill empty space elegantly */
+      opacity: 0.9;
     }
     
     .collection-item:hover {
@@ -352,7 +353,7 @@
             </a>
             
             {% for asset in assets %}
-            <div class="collection-item">
+            <div class="collection-item cycle-on-hover" data-images='{{ asset.variations | map(attribute="image_filename") | list | tojson }}'>
               <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
               
               <!-- Star Button for Collection Feature -->
@@ -428,6 +429,32 @@
       })
       .catch(error => console.error('Error toggling feature:', error));
     }
+    
+    document.querySelectorAll('.cycle-on-hover').forEach(item => {
+      let interval;
+      let img = item.querySelector('img');
+      let imagesAttr = item.getAttribute('data-images');
+      let images = [];
+      try {
+        images = JSON.parse(imagesAttr);
+      } catch (e) {}
+      
+      if (images && images.length > 1) {
+        let originalSrc = img.src;
+        let idx = 0;
+        item.addEventListener('mouseenter', () => {
+          interval = setInterval(() => {
+            idx = (idx + 1) % images.length;
+            if(images[idx]) img.src = '/static/uploads/' + images[idx];
+          }, 800);
+        });
+        item.addEventListener('mouseleave', () => {
+          clearInterval(interval);
+          img.src = originalSrc;
+          idx = 0;
+        });
+      }
+    });
   </script>
   <script src="/static/theme.js"></script>
 </body>
