@@ -1,12 +1,22 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, Address
+from models import db, Address, Asset
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    return render_template('index.html')
+    # Fetch featured collection assets
+    collection_assets = Asset.query.filter_by(status='Active', is_featured_collection=True).order_by(Asset.created_at.desc()).limit(4).all()
+    if not collection_assets:
+        collection_assets = Asset.query.filter_by(status='Active').order_by(Asset.created_at.desc()).limit(4).all()
+    
+    # Fetch featured story asset
+    story_asset = Asset.query.filter_by(status='Active', is_featured_story=True).order_by(Asset.created_at.desc()).first()
+    if not story_asset:
+        story_asset = Asset.query.filter_by(status='Active').order_by(Asset.created_at.desc()).first()
+    
+    return render_template('index.html', collection_assets=collection_assets, story_asset=story_asset)
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
 @login_required

@@ -175,6 +175,40 @@
             </div>
           </div>
           
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 32px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 24px;">
+            <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 24px; color: var(--accent-light); border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px;">Featured Settings</h3>
+            
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div style="background: var(--bg-secondary); color: var(--accent); padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9rem; border-left: 3px solid var(--accent);">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <form action="/seller/feature-collection/{{ asset.id }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if asset.is_featured_collection %}
+                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">Remove from 'The Collection'</button>
+                {% else %}
+                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px;">Feature in 'The Collection'</button>
+                {% endif %}
+              </form>
+
+              <form action="/seller/feature-story/{{ asset.id }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if asset.is_featured_story %}
+                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: transparent; border: 1px solid var(--accent-light); color: var(--accent-light) !important;">Remove from 'IVS Story'</button>
+                {% else %}
+                <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: var(--bg-secondary); color: var(--text-primary) !important; border: 1px solid var(--border-subtle);">Feature in 'IVS Story'</button>
+                {% endif %}
+              </form>
+            </div>
+          </div>
+          
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 32px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 24px; color: var(--accent-light); border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px;">Performance</h3>
             

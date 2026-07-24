@@ -35,6 +35,53 @@ def seller_listings():
     assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).all()
     return render_template('seller/listings.html', assets=assets)
 
+@seller_bp.route('/seller/feature-collection/<int:asset_id>', methods=['POST'])
+@login_required
+def seller_feature_collection(asset_id):
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer.buyer_dashboard'))
+    asset = Asset.query.get_or_404(asset_id)
+    if asset.seller_id != current_user.store_owner_id:
+        flash("Unauthorized")
+        return redirect(url_for('seller.seller_listings'))
+        
+    if not asset.is_featured_collection:
+        count = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_collection=True).count()
+        if count >= 4:
+            flash("You can only feature up to 4 items in The Collection.")
+            return redirect(url_for('seller.seller_listings'))
+        asset.is_featured_collection = True
+    else:
+        asset.is_featured_collection = False
+        
+    db.session.commit()
+    flash('Collection feature status updated.')
+    return redirect(url_for('seller.seller_listings'))
+
+@seller_bp.route('/seller/feature-story/<int:asset_id>', methods=['POST'])
+@login_required
+def seller_feature_story(asset_id):
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer.buyer_dashboard'))
+    asset = Asset.query.get_or_404(asset_id)
+    if asset.seller_id != current_user.store_owner_id:
+        flash("Unauthorized")
+        return redirect(url_for('seller.seller_listings'))
+        
+    if not asset.is_featured_story:
+        # If featuring a new one, we could automatically unfeature the old one, but enforcing the limit of 1 is safer.
+        # Let's auto-unfeature the old one to make it easier for the seller.
+        old_featured = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_story=True).first()
+        if old_featured:
+            old_featured.is_featured_story = False
+        asset.is_featured_story = True
+    else:
+        asset.is_featured_story = False
+        
+    db.session.commit()
+    flash('Story feature status updated.')
+    return redirect(url_for('seller.seller_listings'))
+
 @seller_bp.route('/seller/sales')
 @login_required
 def seller_sales():

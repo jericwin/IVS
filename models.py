@@ -42,6 +42,8 @@ class Asset(db.Model):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='Active')  # Active, Sold
     image_filename = db.Column(db.String(100), default='product-1.png')
+    is_featured_collection = db.Column(db.Boolean, default=False)
+    is_featured_story = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     transaction = db.relationship('Transaction', backref='asset', uselist=False)

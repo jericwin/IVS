@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -72,7 +72,7 @@
       <img src="/static/images/hero-bg.png" alt="IVS Atmosphere">
     </div>
     <div class="hero-content">
-      <div class="hero-tag">Established 2026 â€” ParaÃ±aque</div>
+      <div class="hero-tag">Established 2026 - ParaÃ±aque</div>
       <h1 class="hero-title">
         Dress Like<br>
         You <span class="accent">Mean</span> It
@@ -146,69 +146,28 @@
     <div class="section-header reveal">
       <div class="section-tag">The Collection</div>
       <h2 class="section-title">Curated For the<br>Modern Man</h2>
-      <p class="section-subtitle">Each piece selected to make a statement. No compromises, no fillers â€” just raw,
+      <p class="section-subtitle">Each piece selected to make a statement. No compromises, no fillers just raw,
         uncut
         style.</p>
     </div>
     <div class="products-grid">
-      <!-- Watch -->
-      <div class="product-card reveal reveal-delay-1">
-        <div class="product-badge">Bestseller</div>
+      {% for asset in collection_assets %}
+      <div class="product-card reveal reveal-delay-{{ loop.index }}">
+        {% if loop.index == 1 %}<div class="product-badge">Bestseller</div>{% endif %}
+        {% if loop.index == 3 %}<div class="product-badge">New</div>{% endif %}
         <div class="product-image">
-          <img src="/static/images/watch.png" alt="IVS Chronograph Watch">
+          <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}">
           <div class="product-overlay">
-            <button class="product-overlay-btn">Quick View</button>
+            <a href="/buyer/asset/{{ asset.id }}" style="text-decoration:none;"><button class="product-overlay-btn">Quick View</button></a>
           </div>
         </div>
         <div class="product-info">
-          <div class="product-category">Timepiece</div>
-          <div class="product-name">Shadow Chronograph</div>
-          <div class="product-price">â‚±4,990</div>
+          <div class="product-category">{{ asset.category }}</div>
+          <div class="product-name">{{ asset.name }}</div>
+          <div class="product-price">P{{ "{:,.0f}".format(asset.price) }}</div>
         </div>
       </div>
-      <!-- Cap -->
-      <div class="product-card reveal reveal-delay-2">
-        <div class="product-image">
-          <img src="/static/images/cap.png" alt="IVS Stealth Cap">
-          <div class="product-overlay">
-            <button class="product-overlay-btn">Quick View</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <div class="product-category">Headwear</div>
-          <div class="product-name">Stealth Snapback</div>
-          <div class="product-price">â‚±890</div>
-        </div>
-      </div>
-      <!-- Shirt -->
-      <div class="product-card reveal reveal-delay-3">
-        <div class="product-badge">New</div>
-        <div class="product-image">
-          <img src="/static/images/shirt.png" alt="IVS Essential Tee">
-          <div class="product-overlay">
-            <button class="product-overlay-btn">Quick View</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <div class="product-category">Apparel</div>
-          <div class="product-name">Essential Fitted Tee</div>
-          <div class="product-price">â‚±690</div>
-        </div>
-      </div>
-      <!-- Jacket -->
-      <div class="product-card reveal reveal-delay-4">
-        <div class="product-image">
-          <img src="/static/images/jacket.png" alt="IVS Bomber Jacket">
-          <div class="product-overlay">
-            <button class="product-overlay-btn">Quick View</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <div class="product-category">Outerwear</div>
-          <div class="product-name">Noir Leather Bomber</div>
-          <div class="product-price">â‚±3,490</div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </section>
 
@@ -273,13 +232,17 @@
   <section class="section lookbook-section" id="story">
     <div class="lookbook-grid reveal">
       <div class="lookbook-visual">
+        {% if story_asset %}
+        <img src="/static/uploads/{{ story_asset.image_filename }}" alt="IVS Lookbook">
+        {% else %}
         <img src="/static/images/jacket.png" alt="IVS Lookbook">
+        {% endif %}
       </div>
       <div class="lookbook-content">
         <div class="section-tag">The IVS Story</div>
         <h2 class="section-title">We Don't Do<br>Ordinary</h2>
         <p class="lookbook-text">
-          IVS was born from a simple belief â€” Filipino men deserve access to premium,
+          IVS was born from a simple belief, Filipino men deserve access to premium,
           bold essentials without the luxury markup. We curate pieces that speak volumes
           before you even say a word. From boardroom watches to street-ready bombers,
           every item is a statement.
@@ -303,7 +266,7 @@
       <h2 class="section-title">Join the Movement</h2>
       <p class="section-subtitle">Be the first to know about drops, restocks, and exclusive deals. No spam, ever.</p>
       <form class="newsletter-form" onsubmit="handleSubscribe(event)">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <input type="email" class="newsletter-input" placeholder="Enter your email" required>
         <button type="submit" class="newsletter-btn">Subscribe</button>
       </form>
@@ -316,7 +279,7 @@
       <div class="footer-brand">
         <a href="#" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
         <p class="footer-brand-text">Premium men's essentials crafted for those who refuse to settle. Watches, caps,
-          shirts & jackets â€” curated in ParaÃ±aque.</p>
+          shirts & jackets, curated in ParaÃ±aque.</p>
         <div class="footer-social">
           <a href="https://www.facebook.com/people/IVS-esntls/61587071466397/" aria-label="Facebook">
             <svg viewBox="0 0 24 24" fill="currentColor">
