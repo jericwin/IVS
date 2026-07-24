@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log In IVS</title>
-  <meta name="description" content="Log in to your IVS account.">
+  <title>Verify Code - IVS</title>
+  <meta name="description" content="Verify your reset code.">
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" type="image/png" href="/static/images/logo.png">
   <style>
@@ -122,34 +122,6 @@
     .auth-btn:hover {
       background: var(--accent-light);
     }
-    
-    .auth-links {
-      margin-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-    }
-    
-    .auth-links a {
-      color: var(--text-secondary);
-      transition: color 0.3s;
-    }
-    
-    .auth-links a:hover {
-      color: var(--accent);
-    }
-    
-    .auth-alt {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-    
-    .auth-alt a {
-      color: var(--accent);
-      font-weight: 600;
-    }
   </style>
 </head>
 <body>
@@ -158,11 +130,7 @@
   <nav class="nav" id="navbar">
     <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
-      <a href="/#products">Collection</a>
-      <a href="/#features">Why IVS</a>
-      <a href="/#story">Our Story</a>
-      <a href="/#newsletter">Contact</a>
-      <a href="/signup" class="nav-cta">Sign Up</a>
+      <a href="/login" class="nav-cta">Log In</a>
       <div class="theme-switch-wrapper" style="margin-left: 20px;">
         <label class="theme-switch">
           <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);" class="theme-checkbox" />
@@ -175,7 +143,7 @@
     </div>
   </nav>
 
-  <!-- Login Section -->
+  <!-- Verify Code Section -->
   <div class="auth-page">
     <div class="auth-bg">
       <img src="/static/images/hero-bg.png" alt="Background">
@@ -183,8 +151,8 @@
     
     <div class="auth-card">
       <div class="auth-header">
-        <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Enter your details to access your account.</p>
+        <h1 class="auth-title">Verify Code</h1>
+        <p class="auth-subtitle">Enter the 6-digit code sent to your email and your new password.</p>
       </div>
       
       {% with messages = get_flashed_messages() %}
@@ -205,42 +173,22 @@
         {% endif %}
       {% endwith %}
       
-      <form class="auth-form" id="loginForm" method="POST" action="/login">
-        <input type="hidden" id="userRole" value="seller">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" placeholder="Enter your email" name="email" required>
-        </div>
+      <form class="auth-form" method="POST" action="/verify-reset-code">
+        <!-- Pass email in hidden field to avoid needing sessions if we want it simple -->
+        <input type="hidden" name="email" value="{{ email }}">
         
         <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-input" placeholder="Enter your password" name="password" required>
+          <label class="form-label">6-Digit Code</label>
+          <input type="text" class="form-input" placeholder="Enter code" name="code" required maxlength="6">
         </div>
         
-        <div class="auth-links">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox"> Remember me
-          </label>
-          <a href="/forgot-password">Forgot password?</a>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="form-input" placeholder="Create new password" name="new_password" required>
         </div>
         
-        <button type="submit" class="auth-btn">Log In</button>
-        
-        <div style="margin: 20px 0; display: flex; align-items: center; text-align: center;">
-          <div style="flex: 1; border-bottom: 1px solid var(--border-subtle);"></div>
-          <span style="padding: 0 10px; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">or</span>
-          <div style="flex: 1; border-bottom: 1px solid var(--border-subtle);"></div>
-        </div>
-        
-        <button type="button" class="auth-btn" style="background: transparent; border: 1px solid var(--border-subtle); color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'" onclick="window.location.href='/login/google'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 12c0-.83-.08-1.64-.23-2.42H12v4.58h5.66c-.25 1.48-1.09 2.73-2.34 3.57v2.96h3.78C21.32 18.66 22 15.54 22 12z" fill="currentColor"/><path d="M12 22c2.81 0 5.17-.93 6.9-2.52l-3.78-2.96c-.94.63-2.14 1-3.12 1-2.4 0-4.44-1.62-5.17-3.8H3.01v3A10 10 0 0012 22z" fill="currentColor"/><path d="M6.83 13.72A5.964 5.964 0 016.54 12c0-.61.1-1.21.29-1.78v-3H3.01C2.37 8.35 2 9.63 2 11c0 1.37.37 2.65 1.01 3.8l3.81-1.08z" fill="currentColor"/><path d="M12 5.94c1.53 0 2.9.53 3.98 1.56l2.98-2.98C17.16 2.65 14.81 1.72 12 1.72 8.08 1.72 4.7 4.08 3.01 7.4l3.82 3c.73-2.18 2.77-3.8 5.17-3.8z" fill="currentColor"/></svg>
-          Continue with Google
-        </button>
+        <button type="submit" class="auth-btn">Reset Password</button>
       </form>
-      
-      <div class="auth-alt">
-        Don't have an account? <a href="/signup">Sign Up</a>
-      </div>
     </div>
   </div>
 
@@ -250,14 +198,8 @@
     window.addEventListener('scroll', () => {
       navbar.classList.toggle('scrolled', window.scrollY > 50);
     });
-
   </script>
   <script src="/static/theme.js"></script>
   {% include 'chatbot.html' %}
 </body>
 </html>
-
-
-
-
-

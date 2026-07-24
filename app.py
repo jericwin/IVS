@@ -3,10 +3,31 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import os
+import smtplib
+import random
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from authlib.integrations.flask_client import OAuth
 from models import db, User, Asset, Transaction, Address, ActivityLog
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ivs-super-secret-key-123')
+
+# OAuth Setup
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.environ.get('GOOGLE_CLIENT_ID', 'placeholder_client_id'),
+    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET', 'placeholder_client_secret'),
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_params=None,
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    authorize_params=None,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    client_kwargs={'scope': 'openid email profile'},
+    jwks_uri='https://www.googleapis.com/oauth2/v3/certs'
+)
 
 # Use DATABASE_URL env var if set (for cloud MySQL/Postgres),
 # otherwise fall back to a local SQLite database
@@ -106,6 +127,116 @@ def signup():
         return redirect(url_for('login'))
             
     return render_template('signup.html')
+
+@app.route('/login/google')
+def login_google():
+    redirect_uri = url_for('authorize_google', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/authorize/google')
+def authorize_google():
+    token = google.authorize_access_token()
+    resp = google.get('userinfo')
+    user_info = resp.json()
+    
+    email = user_info.get('email')
+    first_name = user_info.get('given_name', 'Google')
+    last_name = user_info.get('family_name', 'User')
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # Create user if it doesn't exist
+        user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password_hash=generate_password_hash('google_auth_placeholder', method='pbkdf2:sha256'),
+            role='buyer'
+        )
+        db.session.add(user)
+        db.session.commit()
+        
+    login_user(user)
+    
+    if user.role in ['seller', 'employee']:
+        log = ActivityLog(user_id=user.id, store_owner_id=user.store_owner_id, action='login', details=f"Logged in via Google IP {request.remote_addr}")
+        db.session.add(log)
+        db.session.commit()
+        return redirect(url_for('seller_dashboard'))
+        
+    return redirect(url_for('buyer_dashboard'))
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email_addr = request.form.get('email')
+        user = User.query.filter_by(email=email_addr).first()
+        
+        if user:
+            # Generate code
+            code = str(random.randint(100000, 999999))
+            user.reset_code = code
+            user.reset_code_expiration = datetime.utcnow() + timedelta(minutes=15)
+            db.session.commit()
+            
+            # Send Email
+            sender_email = os.environ.get('MAIL_USERNAME')
+            sender_password = os.environ.get('MAIL_PASSWORD')
+            
+            if sender_email and sender_password:
+                try:
+                    msg = MIMEMultipart()
+                    msg['From'] = sender_email
+                    msg['To'] = user.email
+                    msg['Subject'] = 'Your IVS Password Reset Code'
+                    
+                    body = f"Hello {user.first_name},\n\nYour password reset code is: {code}\n\nThis code will expire in 15 minutes.\n\nThanks,\nIVS Team"
+                    msg.attach(MIMEText(body, 'plain'))
+                    
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login(sender_email, sender_password)
+                    server.send_message(msg)
+                    server.quit()
+                    
+                    flash('Verification code sent to your email.')
+                    return render_template('verify_reset_code.html', email=user.email)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    flash('Error sending email. Please try again later.')
+            else:
+                print(f"DEBUG: Reset code for {user.email} is {code}")
+                flash('Email credentials not configured. Code printed to console for debugging.')
+                return render_template('verify_reset_code.html', email=user.email)
+                
+        else:
+            flash('If an account with that email exists, a verification code has been sent.')
+            return render_template('verify_reset_code.html', email=email_addr)
+            
+    return render_template('forgot_password.html')
+
+@app.route('/verify-reset-code', methods=['POST'])
+def verify_reset_code():
+    email_addr = request.form.get('email')
+    code = request.form.get('code')
+    new_password = request.form.get('new_password')
+    
+    user = User.query.filter_by(email=email_addr).first()
+    
+    if user and user.reset_code == code:
+        if user.reset_code_expiration and user.reset_code_expiration > datetime.utcnow():
+            user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+            user.reset_code = None
+            user.reset_code_expiration = None
+            db.session.commit()
+            flash('Password reset successfully! Please log in.')
+            return redirect(url_for('login'))
+        else:
+            flash('Verification code has expired. Please request a new one.')
+            return render_template('verify_reset_code.html', email=email_addr)
+    else:
+        flash('Invalid verification code.')
+        return render_template('verify_reset_code.html', email=email_addr)
 
 @app.route('/logout')
 @login_required

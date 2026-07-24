@@ -12,6 +12,8 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20), nullable=True)
     address = db.Column(db.Text, nullable=True)
+    reset_code = db.Column(db.String(10), nullable=True)
+    reset_code_expiration = db.Column(db.DateTime, nullable=True)
     role = db.Column(db.String(20), nullable=False)  # 'buyer' or 'seller' or 'employee'
     employer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
