@@ -27,7 +27,10 @@ def seller_dashboard():
     transactions = Transaction.query.filter(Transaction.asset_id.in_(asset_ids)).all() if asset_ids else []
     total_sales_volume = sum((tx.asset.price or 0.0) for tx in transactions if tx.asset)
     
-    recent_activity = ActivityLog.query.filter_by(store_owner_id=current_user.store_owner_id).order_by(ActivityLog.timestamp.desc()).limit(5).all()
+    recent_activity = ActivityLog.query.filter(
+        ActivityLog.store_owner_id == current_user.store_owner_id,
+        ActivityLog.action.notin_(['login', 'logout'])
+    ).order_by(ActivityLog.timestamp.desc()).limit(5).all()
     
     return render_template('seller/dashboard.html', 
                            assets=recent_assets,
@@ -144,6 +147,15 @@ def update_delivery_status(transaction_id):
     status = request.form.get('delivery_status')
     if status == 'To be delivered':
         tx.delivery_status = status
+        
+        log = ActivityLog(
+            user_id=current_user.id,
+            store_owner_id=current_user.store_owner_id,
+            action='update_status',
+            details=f"Marked order for {tx.asset.name} as To be delivered"
+        )
+        db.session.add(log)
+        
         db.session.commit()
         flash('Order marked as To be delivered.')
         
@@ -167,6 +179,15 @@ def update_delivery_status(transaction_id):
             
             tx.delivery_evidence_filename = unique_filename
             tx.delivery_status = status
+            
+            log = ActivityLog(
+                user_id=current_user.id,
+                store_owner_id=current_user.store_owner_id,
+                action='update_status',
+                details=f"Marked order for {tx.asset.name} as Delivered"
+            )
+            db.session.add(log)
+            
             db.session.commit()
             flash('Order marked as Delivered with evidence.')
             
@@ -254,6 +275,15 @@ def seller_add_asset():
             new_var = AssetVariation(asset_id=new_asset.id, name="Default", image_filename=filename)
             db.session.add(new_var)
 
+        # Log activity
+        log = ActivityLog(
+            user_id=current_user.id,
+            store_owner_id=current_user.store_owner_id,
+            action='add_asset',
+            details=f"Added new asset: {new_asset.name}"
+        )
+        db.session.add(log)
+
         db.session.commit()
         
         flash('Asset posted successfully!')
@@ -337,7 +367,16 @@ def seller_edit_asset(asset_id):
                 else:
                     new_var = AssetVariation(asset_id=asset.id, name="Default", image_filename=filename)
                     db.session.add(new_var)
-            
+                
+        # Log activity
+        log = ActivityLog(
+            user_id=current_user.id,
+            store_owner_id=current_user.store_owner_id,
+            action='edit_asset',
+            details=f"Updated asset: {asset.name}"
+        )
+        db.session.add(log)
+
         db.session.commit()
         flash('Asset updated successfully!')
         return redirect(url_for('seller.seller_asset_detail', asset_id=asset.id))

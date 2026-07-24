@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Asset, Transaction, Address
+from models import db, Asset, Transaction, Address, ActivityLog
 
 buyer_bp = Blueprint('buyer', __name__)
 
@@ -66,6 +66,16 @@ def buyer_checkout(asset_id):
             variation_name=variation
         )
         db.session.add(transaction)
+        
+        # Log activity for the seller
+        log = ActivityLog(
+            user_id=asset.seller_id, # Using seller_id as user_id for system-generated logs, or maybe we can keep it as buyer id but store owner is seller
+            store_owner_id=asset.seller_id,
+            action='new_order',
+            details=f"Received a new order for {asset.name}"
+        )
+        db.session.add(log)
+        
         db.session.commit()
         
         flash('Purchase successful! The asset is now in your collection.')
