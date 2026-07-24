@@ -288,13 +288,13 @@
       </div>
       <div style="position: relative; margin-left: 20px;">
         <div class="nav-profile" style="cursor: pointer;" onclick="const menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block';">
-          <div class="avatar">S</div>
-          <span style="font-size: 0.9rem; font-weight: 500;">Seller Account</span>
+          <div class="avatar">{{ current_user.first_name[0] if current_user.first_name else 'S' }}</div>
+          <span style="font-size: 0.9rem; font-weight: 500;">{{ current_user.first_name }}</span>
         </div>
         <div style="display: none; position: absolute; top: 120%; right: 0; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 200px; z-index: 100;">
           <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 16px;">
             <p style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin: 0;">Signed in as</p>
-            <p style="font-weight: 600; font-size: 0.9rem; margin: 4px 0 0 0; color: var(--text-primary);">Seller Account</p>
+            <p style="font-weight: 600; font-size: 0.9rem; margin: 4px 0 0 0; color: var(--text-primary);">{{ current_user.first_name }}</p>
           </div>
           <a href="/profile" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">My Profile</a>
           {% if current_user.role == 'seller' %}

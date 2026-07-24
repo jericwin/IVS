@@ -16,8 +16,22 @@ seller_bp = Blueprint('seller', __name__)
 def seller_dashboard():
     if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer.buyer_dashboard'))
-    recent_assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).order_by(Asset.created_at.desc()).limit(3).all()
-    return render_template('seller/dashboard.html', assets=recent_assets)
+        
+    assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).order_by(Asset.created_at.desc()).all()
+    recent_assets = assets[:3]
+    
+    total_listed_assets = len(assets)
+    store_views = sum((a.views or 0) for a in assets)
+    
+    asset_ids = [a.id for a in assets]
+    transactions = Transaction.query.filter(Transaction.asset_id.in_(asset_ids)).all() if asset_ids else []
+    total_sales_volume = sum((tx.asset.price or 0.0) for tx in transactions if tx.asset)
+    
+    return render_template('seller/dashboard.html', 
+                           assets=recent_assets,
+                           total_listed_assets=total_listed_assets,
+                           store_views=store_views,
+                           total_sales_volume=total_sales_volume)
 
 @seller_bp.route('/seller/asset/<int:asset_id>')
 @login_required
@@ -453,7 +467,20 @@ def seller_logs():
 def seller_analytics():
     if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer.buyer_dashboard'))
-    return render_template('seller/analytics.html')
+        
+    assets = Asset.query.filter_by(seller_id=current_user.store_owner_id).all()
+    store_views = sum((a.views or 0) for a in assets)
+    
+    asset_ids = [a.id for a in assets]
+    transactions = Transaction.query.filter(Transaction.asset_id.in_(asset_ids)).all() if asset_ids else []
+    total_revenue = sum((tx.asset.price or 0.0) for tx in transactions if tx.asset)
+    
+    conversion_rate = (len(transactions) / store_views * 100) if store_views > 0 else 0.0
+    
+    return render_template('seller/analytics.html',
+                           total_revenue=total_revenue,
+                           store_views=store_views,
+                           conversion_rate=conversion_rate)
 
 @seller_bp.route('/seller/settings')
 @login_required

@@ -105,7 +105,7 @@
       </div>
       <div style="position: relative; margin-left: 20px;">
         <div class="nav-profile" style="cursor: pointer;" onclick="const menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block';">
-          <div class="avatar">{{ current_user.first_name[0] }}</div>
+          <div class="avatar">{{ current_user.first_name[0] if current_user.first_name else 'U' }}</div>
           <span style="font-size: 0.9rem; font-weight: 500;">{{ current_user.first_name }}</span>
         </div>
         <div style="display: none; position: absolute; top: 120%; right: 0; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 200px; z-index: 100;">
