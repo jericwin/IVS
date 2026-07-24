@@ -376,27 +376,23 @@
         <div class="section-side">
           <h2 class="section-title">Recent Activity</h2>
           <div class="activity-list">
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text"><strong>Aethelgard Watch</strong> reached a new high valuation.</div>
-                <div class="activity-time">2 hours ago</div>
+            {% if recent_activity %}
+              {% for activity in recent_activity %}
+              <div class="activity-item">
+                <div class="activity-icon">◆</div>
+                <div class="activity-content">
+                  <div class="activity-text">{{ activity.action|safe }}</div>
+                  <div class="activity-time">{{ activity.timestamp.strftime('%b %d, %Y %H:%M') }}</div>
+                </div>
               </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon">◇</div>
-              <div class="activity-content">
-                <div class="activity-text">You added <strong>Obsidian Cuff</strong> to your primary collection.</div>
-                <div class="activity-time">Yesterday</div>
+              {% endfor %}
+            {% else %}
+              <div class="activity-item">
+                <div class="activity-content">
+                  <div class="activity-text">No recent activity.</div>
+                </div>
               </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon">◆</div>
-              <div class="activity-content">
-                <div class="activity-text">Monthly analytics report is ready to view.</div>
-                <div class="activity-time">3 days ago</div>
-              </div>
-            </div>
+            {% endif %}
           </div>
         </div>
 

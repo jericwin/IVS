@@ -27,11 +27,14 @@ def seller_dashboard():
     transactions = Transaction.query.filter(Transaction.asset_id.in_(asset_ids)).all() if asset_ids else []
     total_sales_volume = sum((tx.asset.price or 0.0) for tx in transactions if tx.asset)
     
+    recent_activity = ActivityLog.query.filter_by(store_owner_id=current_user.store_owner_id).order_by(ActivityLog.timestamp.desc()).limit(5).all()
+    
     return render_template('seller/dashboard.html', 
                            assets=recent_assets,
                            total_listed_assets=total_listed_assets,
                            store_views=store_views,
-                           total_sales_volume=total_sales_volume)
+                           total_sales_volume=total_sales_volume,
+                           recent_activity=recent_activity)
 
 @seller_bp.route('/seller/asset/<int:asset_id>')
 @login_required
@@ -477,10 +480,20 @@ def seller_analytics():
     
     conversion_rate = (len(transactions) / store_views * 100) if store_views > 0 else 0.0
     
+    import json
+    chart_data = []
+    for tx in transactions:
+        if tx.asset:
+            chart_data.append({
+                'date': tx.date_purchased.strftime('%Y-%m-%d'),
+                'revenue': float(tx.asset.price or 0.0)
+            })
+    
     return render_template('seller/analytics.html',
                            total_revenue=total_revenue,
                            store_views=store_views,
-                           conversion_rate=conversion_rate)
+                           conversion_rate=conversion_rate,
+                           chart_data_json=json.dumps(chart_data))
 
 @seller_bp.route('/seller/settings')
 @login_required

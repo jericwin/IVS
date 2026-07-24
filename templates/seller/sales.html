@@ -315,11 +315,17 @@
       </div>
       
       <!-- Filter Controls -->
-      <div style="margin-bottom: 24px; display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
+      <div style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding-bottom: 8px;">
         <button class="filter-btn active" data-filter="all" style="background: var(--accent); color: var(--bg-primary); border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; white-space: nowrap;">All Orders</button>
         <button class="filter-btn" data-filter="Pending" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; white-space: nowrap;">Pending</button>
         <button class="filter-btn" data-filter="To be delivered" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; white-space: nowrap;">To Ship</button>
         <button class="filter-btn" data-filter="Delivered" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; white-space: nowrap;">Delivered</button>
+        
+        <div style="margin-left: auto; display: flex; gap: 12px; align-items: center;">
+          <input type="date" id="date-from" class="form-input" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary);">
+          <span style="color: var(--text-secondary);">to</span>
+          <input type="date" id="date-to" class="form-input" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary);">
+        </div>
       </div>
 
       <div class="dashboard-sections" style="grid-template-columns: 1fr;">
@@ -328,7 +334,7 @@
         <div class="section-main">
           <div class="activity-list">
             {% for tx in transactions %}
-            <div class="tx-item-container" data-status="{{ tx.delivery_status or 'Pending' }}" style="border: 1px solid var(--border-subtle); border-radius: 4px; overflow: hidden; background: var(--bg-card); cursor: pointer;" onclick="const details = this.querySelector('.tx-details'); details.style.display = details.style.display === 'block' ? 'none' : 'block';">
+            <div class="tx-item-container" data-status="{{ tx.delivery_status or 'Pending' }}" data-date="{{ tx.date_purchased.strftime('%Y-%m-%d') }}" style="border: 1px solid var(--border-subtle); border-radius: 4px; overflow: hidden; background: var(--bg-card); cursor: pointer;" onclick="const details = this.querySelector('.tx-details'); details.style.display = details.style.display === 'block' ? 'none' : 'block';">
               <div class="activity-item" style="align-items: center; padding: 24px; border: none; margin: 0; cursor: inherit; transition: background 0.3s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
                 <img src="/static/uploads/{{ tx.asset.image_filename }}" onerror="this.src='/static/images/product-1.png'" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 16px;">
                 <div class="activity-content">
@@ -479,7 +485,32 @@
     document.addEventListener('DOMContentLoaded', () => {
       const filterBtns = document.querySelectorAll('.filter-btn');
       const txItems = document.querySelectorAll('.tx-item-container');
-      
+      const dateFrom = document.getElementById('date-from');
+      const dateTo = document.getElementById('date-to');
+      let currentStatusFilter = 'all';
+
+      function applyFilters() {
+        const fromVal = dateFrom.value;
+        const toVal = dateTo.value;
+        
+        txItems.forEach(item => {
+          const itemStatus = item.getAttribute('data-status');
+          const itemDate = item.getAttribute('data-date');
+          
+          let statusMatch = (currentStatusFilter === 'all' || itemStatus === currentStatusFilter);
+          let dateMatch = true;
+          
+          if (fromVal && itemDate < fromVal) dateMatch = false;
+          if (toVal && itemDate > toVal) dateMatch = false;
+          
+          if (statusMatch && dateMatch) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      }
+
       filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           // Update active button styling
@@ -494,17 +525,13 @@
           btn.style.color = 'var(--bg-primary)';
           btn.style.border = 'none';
           
-          const filterValue = btn.getAttribute('data-filter');
-          
-          txItems.forEach(item => {
-            if (filterValue === 'all' || item.getAttribute('data-status') === filterValue) {
-              item.style.display = 'block';
-            } else {
-              item.style.display = 'none';
-            }
-          });
+          currentStatusFilter = btn.getAttribute('data-filter');
+          applyFilters();
         });
       });
+      
+      dateFrom.addEventListener('change', applyFilters);
+      dateTo.addEventListener('change', applyFilters);
     });
   </script>
 

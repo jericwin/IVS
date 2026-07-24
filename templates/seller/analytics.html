@@ -335,33 +335,15 @@
         <div class="section-main">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h2 class="section-title" style="margin-bottom: 0;">Performance Over Time</h2>
-            <div style="display: flex; gap: 16px;">
-              <select class="form-input" style="width: auto; padding: 10px 16px; border-radius: 4px; cursor: pointer;">
-                <option>Last 30 Days</option>
-                <option>Last 7 Days</option>
-                <option>This Year</option>
-                <option>All Time</option>
-              </select>
-              <select class="form-input" style="width: auto; padding: 10px 16px; border-radius: 4px; cursor: pointer;">
-                <option>Revenue</option>
-                <option>Views</option>
-                <option>Conversion</option>
-              </select>
+            <div style="display: flex; gap: 16px; align-items: center;">
+              <input type="date" id="chart-date-from" class="form-input" style="padding: 10px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary);">
+              <span style="color: var(--text-secondary);">to</span>
+              <input type="date" id="chart-date-to" class="form-input" style="padding: 10px; border-radius: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-primary);">
             </div>
           </div>
           
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 40px; border-radius: 8px; height: 400px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <!-- Placeholder for chart -->
-            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to top, rgba(201, 169, 110, 0.1), transparent);"></div>
-            <div style="z-index: 1; text-align: center; color: var(--text-secondary);">
-              <div style="font-size: 3rem; margin-bottom: 16px;">📈</div>
-              <p style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em;">Chart integration pending</p>
-            </div>
-            
-            <!-- Fake chart line using SVG -->
-            <svg style="position: absolute; inset: 0; width: 100%; height: 100%;" preserveAspectRatio="none" viewBox="0 0 100 100">
-               <path d="M0,80 Q20,60 40,70 T80,40 T100,20" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"></path>
-            </svg>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 40px; border-radius: 8px; height: 400px; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <canvas id="performanceChart"></canvas>
           </div>
         </div>
 
@@ -371,6 +353,84 @@
   </div>
 
   <script src="/static/theme.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const rawData = {{ chart_data_json|safe }};
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      let chart;
+
+      function renderChart(filteredData) {
+        // Group by date
+        const revenueByDate = {};
+        filteredData.forEach(item => {
+          revenueByDate[item.date] = (revenueByDate[item.date] || 0) + item.revenue;
+        });
+
+        const dates = Object.keys(revenueByDate).sort();
+        const revenues = dates.map(d => revenueByDate[d]);
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [{
+              label: 'Revenue (₱)',
+              data: revenues,
+              borderColor: '#c9a96e',
+              backgroundColor: 'rgba(201, 169, 110, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.05)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.05)'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function applyFilter() {
+        const fromVal = document.getElementById('chart-date-from').value;
+        const toVal = document.getElementById('chart-date-to').value;
+        
+        let filtered = rawData;
+        if (fromVal) filtered = filtered.filter(d => d.date >= fromVal);
+        if (toVal) filtered = filtered.filter(d => d.date <= toVal);
+        
+        renderChart(filtered);
+      }
+
+      document.getElementById('chart-date-from').addEventListener('change', applyFilter);
+      document.getElementById('chart-date-to').addEventListener('change', applyFilter);
+
+      // Initial render
+      applyFilter();
+    });
+  </script>
 </body>
 </html>
 
