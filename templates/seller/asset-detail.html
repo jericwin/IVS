@@ -172,6 +172,14 @@
                 <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 4px;">Category</div>
                 <div style="color: var(--text-primary); font-weight: 500; font-size: 1.1rem;">{{ asset.category }}</div>
               </div>
+              
+              <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                <a href="/seller/edit-asset/{{ asset.id }}" class="auth-btn" style="width: 100%; text-align: center; margin-top:0; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important; text-decoration: none;">Edit Details</a>
+                <form action="/seller/delete-asset/{{ asset.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this asset? This action cannot be undone.');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="auth-btn" style="width: 100%; margin-top:0; padding: 12px; background: transparent; border: 1px solid #f44336; color: #f44336 !important;">Delete Asset</button>
+                </form>
+              </div>
             </div>
           </div>
           

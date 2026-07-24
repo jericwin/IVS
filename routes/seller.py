@@ -151,6 +151,60 @@ def seller_add_asset():
         
     return render_template('seller/add-asset.html')
 
+@seller_bp.route('/seller/edit-asset/<int:asset_id>', methods=['GET', 'POST'])
+@login_required
+def seller_edit_asset(asset_id):
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer.buyer_dashboard'))
+        
+    asset = Asset.query.get_or_404(asset_id)
+    if asset.seller_id != current_user.store_owner_id:
+        flash("You don't have permission to edit this asset.")
+        return redirect(url_for('seller.seller_listings'))
+        
+    if request.method == 'POST':
+        asset.name = request.form.get('name')
+        try:
+            asset.price = float(request.form.get('price')) if request.form.get('price') else 0.0
+        except ValueError:
+            pass
+        try:
+            asset.stock = int(request.form.get('stock')) if request.form.get('stock') else 1
+        except ValueError:
+            pass
+        asset.category = request.form.get('category')
+        asset.description = request.form.get('description')
+        
+        image = request.files.get('image')
+        if image and image.filename:
+            filename = image.filename
+            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            image.save(os.path.join(upload_dir, filename))
+            asset.image_filename = filename
+            
+        db.session.commit()
+        flash('Asset updated successfully!')
+        return redirect(url_for('seller.seller_asset_detail', asset_id=asset.id))
+        
+    return render_template('seller/edit-asset.html', asset=asset)
+
+@seller_bp.route('/seller/delete-asset/<int:asset_id>', methods=['POST'])
+@login_required
+def seller_delete_asset(asset_id):
+    if current_user.role not in ['seller', 'employee']:
+        return redirect(url_for('buyer.buyer_dashboard'))
+        
+    asset = Asset.query.get_or_404(asset_id)
+    if asset.seller_id != current_user.store_owner_id:
+        flash("You don't have permission to delete this asset.")
+        return redirect(url_for('seller.seller_listings'))
+        
+    db.session.delete(asset)
+    db.session.commit()
+    flash('Asset deleted successfully!')
+    return redirect(url_for('seller.seller_listings'))
+
 @seller_bp.route('/seller/add-employee', methods=['GET', 'POST'])
 @login_required
 def seller_add_employee():
