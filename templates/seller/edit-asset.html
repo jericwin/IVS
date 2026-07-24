@@ -274,7 +274,7 @@
     <div class="nav-links" id="navLinks">
       <a href="/seller/dashboard">Overview</a>
       <a href="/seller/listings">My Listings</a>
-      <a href="/seller/sales">My Sales</a>
+      <a href="/seller/sales" style="display: flex; align-items: center;">My Sales {% if pending_orders_count and pending_orders_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 5px;">{{ pending_orders_count }}</span>{% endif %}</a>
       <a href="/seller/analytics">Analytics</a>
       <a href="/seller/settings" style="color: var(--accent);">Settings</a>
       <div class="theme-switch-wrapper" style="margin-left: 20px;">

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db, Asset, Transaction, Address, ActivityLog
+from models import db, Asset, Transaction, Address, ActivityLog, User
+import os
 
 buyer_bp = Blueprint('buyer', __name__)
 
@@ -77,6 +78,34 @@ def buyer_checkout(asset_id):
         db.session.add(log)
         
         db.session.commit()
+        
+        # Send Email to Seller
+        seller = User.query.get(asset.seller_id)
+        if seller:
+            sender_email = os.environ.get('MAIL_USERNAME')
+            sender_password = os.environ.get('MAIL_PASSWORD')
+            
+            if sender_email and sender_password:
+                try:
+                    import smtplib
+                    from email.mime.text import MIMEText
+                    from email.mime.multipart import MIMEMultipart
+                    
+                    msg = MIMEMultipart()
+                    msg['From'] = sender_email
+                    msg['To'] = seller.email
+                    msg['Subject'] = f'New Order: {asset.name}'
+                    
+                    body = f"Hello {seller.first_name},\n\nYou have received a new order for {asset.name}!\n\nPlease check your 'My Sales' dashboard to view the details.\n\nThanks,\nIVS Team"
+                    msg.attach(MIMEText(body, 'plain'))
+                    
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login(sender_email, sender_password)
+                    server.send_message(msg)
+                    server.quit()
+                except Exception as e:
+                    print(f"Error sending email to seller: {e}")
         
         flash('Purchase successful! The asset is now in your collection.')
         return redirect(url_for('buyer.buyer_dashboard'))
