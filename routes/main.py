@@ -102,3 +102,64 @@ def api_chat():
         reply = "I'm a simple automated assistant. I can help with questions about orders, payments, addresses, or selling. Can you be more specific?"
         
     return jsonify({'reply': reply})
+
+
+import random, smtplib
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from werkzeug.security import generate_password_hash
+
+@main_bp.route('/profile/change-password/request-otp', methods=['POST'])
+@login_required
+def request_otp():
+    code = str(random.randint(100000, 999999))
+    current_user.reset_code = code
+    current_user.reset_code_expiration = datetime.utcnow() + timedelta(minutes=10)
+    db.session.commit()
+    
+    sender_email = os.environ.get('MAIL_USERNAME')
+    sender_password = os.environ.get('MAIL_PASSWORD')
+    
+    if sender_email and sender_password:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = sender_email
+            msg['To'] = current_user.email
+            msg['Subject'] = 'Your Password Change OTP'
+            body = f'Hello {current_user.first_name},\n\nYour OTP to change your password is: {code}\n\nThis code will expire in 10 minutes.'
+            msg.attach(MIMEText(body, 'plain'))
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+            return jsonify({'success': True, 'message': 'OTP sent to your email.'})
+        except Exception as e:
+            print(f'Error sending email: {e}')
+            return jsonify({'success': False, 'message': 'Failed to send OTP.'}), 500
+    return jsonify({'success': False, 'message': 'Email not configured.'}), 500
+
+@main_bp.route('/profile/change-password/verify', methods=['POST'])
+@login_required
+def verify_otp():
+    otp = request.form.get('otp')
+    new_password = request.form.get('new_password')
+    
+    if not otp or not new_password:
+        return jsonify({'success': False, 'message': 'Missing fields.'}), 400
+        
+    if current_user.reset_code != otp:
+        return jsonify({'success': False, 'message': 'Invalid OTP.'}), 400
+        
+    if not current_user.reset_code_expiration or current_user.reset_code_expiration < datetime.utcnow():
+        return jsonify({'success': False, 'message': 'OTP has expired.'}), 400
+        
+    # Update password
+    current_user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+    current_user.reset_code = None
+    current_user.reset_code_expiration = None
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Password changed successfully.'})

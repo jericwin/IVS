@@ -163,14 +163,14 @@ def buyer_checkout():
                         msg['To'] = recipient
                         msg['Subject'] = f'New Orders Received'
                         
-                        body = f"Hello {seller.first_name},
+                        body = f"""Hello {seller.first_name},
 
 You have received new orders!
 
 Please check your 'My Sales' dashboard to view the details.
 
 Thanks,
-IVS Team"
+IVS Team"""
                         msg.attach(MIMEText(body, 'plain'))
                         
                         server = smtplib.SMTP('smtp.gmail.com', 587)
