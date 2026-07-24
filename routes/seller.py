@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, current_user
 import os, random
@@ -45,6 +45,7 @@ def seller_feature_collection(asset_id):
         flash("Unauthorized")
         return redirect(url_for('seller.seller_listings'))
         
+    unfeatured_id = None
     if not asset.is_featured_collection:
         count = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_collection=True).count()
         if count >= 4:
@@ -52,11 +53,16 @@ def seller_feature_collection(asset_id):
             oldest_featured = Asset.query.filter_by(seller_id=current_user.store_owner_id, is_featured_collection=True).order_by(Asset.id.asc()).first()
             if oldest_featured:
                 oldest_featured.is_featured_collection = False
+                unfeatured_id = oldest_featured.id
         asset.is_featured_collection = True
     else:
         asset.is_featured_collection = False
         
     db.session.commit()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
+        return jsonify({'success': True, 'is_featured': asset.is_featured_collection, 'unfeatured_id': unfeatured_id})
+        
     flash('Collection feature status updated.')
     return redirect(url_for('seller.seller_listings'))
 

@@ -153,8 +153,6 @@
     <div class="products-grid">
       {% for asset in collection_assets %}
       <div class="product-card reveal reveal-delay-{{ loop.index }}">
-        {% if loop.index == 1 %}<div class="product-badge">Bestseller</div>{% endif %}
-        {% if loop.index == 3 %}<div class="product-badge">New</div>{% endif %}
         <div class="product-image">
           <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}">
           <div class="product-overlay">

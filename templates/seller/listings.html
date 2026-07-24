@@ -356,15 +356,12 @@
               <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
               
               <!-- Star Button for Collection Feature -->
-              <div style="position: absolute; top: 16px; left: 16px; z-index: 10;">
-                <form action="/seller/feature-collection/{{ asset.id }}" method="POST" style="margin: 0;">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" title="Toggle Feature in The Collection">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="{% if asset.is_featured_collection %}var(--accent){% else %}none{% endif %}" stroke="{% if asset.is_featured_collection %}var(--accent){% else %}#fff{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                  </button>
-                </form>
+              <div style="position: absolute; top: 16px; left: 16px; z-index: 20;">
+                <button onclick="toggleFeature({{ asset.id }}, this)" data-featured="{% if asset.is_featured_collection %}true{% else %}false{% endif %}" id="star-btn-{{ asset.id }}" style="background: rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: all 0.3s ease; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));" title="Toggle Feature in The Collection" onmouseover="this.style.background='rgba(0,0,0,0.9)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.background='rgba(0,0,0,0.6)'; this.style.borderColor='var(--border-subtle)';">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="{% if asset.is_featured_collection %}var(--accent){% else %}rgba(0,0,0,0.5){% endif %}" stroke="{% if asset.is_featured_collection %}var(--accent){% else %}#fff{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: all 0.3s ease;">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
               </div>
 
               <div class="collection-info">
@@ -386,6 +383,52 @@
     </main>
   </div>
 
+  <script>
+    function toggleFeature(assetId, btn) {
+      // Prevent default action just in case
+      event.preventDefault();
+      
+      const isFeatured = btn.getAttribute('data-featured') === 'true';
+      const csrfToken = "{{ csrf_token() }}";
+      
+      fetch(`/seller/feature-collection/${assetId}?ajax=1`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `csrf_token=${csrfToken}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update the current star
+          const svg = btn.querySelector('svg');
+          if (data.is_featured) {
+            btn.setAttribute('data-featured', 'true');
+            svg.setAttribute('fill', 'var(--accent)');
+            svg.setAttribute('stroke', 'var(--accent)');
+          } else {
+            btn.setAttribute('data-featured', 'false');
+            svg.setAttribute('fill', 'rgba(0,0,0,0.5)');
+            svg.setAttribute('stroke', '#fff');
+          }
+          
+          // If an older item was unfeatured because we exceeded limit, update its star too
+          if (data.unfeatured_id && data.unfeatured_id !== assetId) {
+            const oldBtn = document.getElementById(`star-btn-${data.unfeatured_id}`);
+            if (oldBtn) {
+              oldBtn.setAttribute('data-featured', 'false');
+              const oldSvg = oldBtn.querySelector('svg');
+              oldSvg.setAttribute('fill', 'rgba(0,0,0,0.5)');
+              oldSvg.setAttribute('stroke', '#fff');
+            }
+          }
+        }
+      })
+      .catch(error => console.error('Error toggling feature:', error));
+    }
+  </script>
   <script src="/static/theme.js"></script>
 </body>
 </html>
