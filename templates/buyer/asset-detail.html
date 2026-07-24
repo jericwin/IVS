@@ -139,9 +139,13 @@
   <nav class="nav" id="navbar">
     <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
-      <a href="/buyer/dashboard">Overview</a>
+      
       <a href="/buyer/marketplace" style="color: var(--accent);">Marketplace</a>
       <a href="/buyer/purchases">My Purchases</a>
+      <a href="/buyer/cart" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        Cart {% if cart_item_count and cart_item_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">{{ cart_item_count }}</span>{% endif %}
+      </a>
       <a href="/buyer/settings">Settings</a>
       <div class="theme-switch-wrapper" style="margin-left: 20px;">
         <label class="theme-switch">
@@ -222,11 +226,20 @@
           {% endif %}
 
           {% if asset.status == 'Active' %}
-          <form id="checkoutForm" action="/buyer/checkout/{{ asset.id }}" method="GET">
+          <form id="checkoutForm" action="/buyer/cart/add/{{ asset.id }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="variation" id="selectedVariation" value="{% if asset.variations %}{{ asset.variations[0].name }}{% endif %}">
-            <button type="button" onclick="submitCheckout()" class="auth-btn" style="width: 100%; text-align: center; display: block; font-size: 1.1rem; padding: 16px; border: none; cursor: pointer;">
-              Buy Now
-            </button>
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <div style="display: flex; flex-direction: column;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;">Quantity</label>
+                <input type="number" name="quantity" value="1" min="1" max="{{ asset.stock }}" style="width: 80px; padding: 14px 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 4px; font-size: 1.1rem; text-align: center;">
+              </div>
+              <div style="flex: 1; display: flex; align-items: flex-end;">
+                <button type="submit" class="auth-btn" style="width: 100%; text-align: center; display: block; font-size: 1.1rem; padding: 16px; border: none; cursor: pointer; margin: 0;">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
           </form>
           {% else %}
           <button class="auth-btn" disabled style="background: var(--bg-card); border-color: var(--border-subtle); color: var(--text-secondary); cursor: not-allowed;">
@@ -279,12 +292,11 @@
     }
     
     function submitCheckout() {
-      const variationInput = document.getElementById('selectedVariation');
-      if (document.querySelectorAll('.variation-btn').length > 0 && !variationInput.value) {
-        alert("Please select a variation first.");
-        return;
+      // Form submits directly to add to cart
+      const form = document.getElementById('checkoutForm');
+      if(form) {
+        form.submit();
       }
-      document.getElementById('checkoutForm').submit();
     }
     
     // Auto-select first variation if it exists

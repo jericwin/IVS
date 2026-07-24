@@ -26,7 +26,7 @@ def login():
                 db.session.commit()
                 
             if user.role == 'buyer':
-                return redirect(url_for('buyer.buyer_dashboard'))
+                return redirect(url_for('buyer.buyer_marketplace'))
             else:
                 return redirect(url_for('seller.seller_dashboard'))
         flash('Invalid email or password')
@@ -97,7 +97,7 @@ def authorize_google():
         db.session.commit()
         return redirect(url_for('seller.seller_dashboard'))
         
-    return redirect(url_for('buyer.buyer_dashboard'))
+    return redirect(url_for('buyer.buyer_marketplace'))
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

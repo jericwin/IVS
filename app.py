@@ -89,16 +89,21 @@ app.register_blueprint(buyer_bp)
 app.register_blueprint(seller_bp)
 
 @app.context_processor
-def inject_pending_orders():
+def inject_global_counts():
     from flask_login import current_user
-    if current_user.is_authenticated and current_user.role in ['seller', 'employee']:
-        from models import Transaction, Asset
-        pending_count = Transaction.query.join(Asset).filter(
-            Asset.seller_id == current_user.store_owner_id,
-            (Transaction.delivery_status == None) | (Transaction.delivery_status == 'Pending')
-        ).count()
-        return dict(pending_orders_count=pending_count)
-    return dict(pending_orders_count=0)
+    counts = {'pending_orders_count': 0, 'cart_item_count': 0}
+    if current_user.is_authenticated:
+        if current_user.role in ['seller', 'employee']:
+            from models import Transaction, Asset
+            pending_count = Transaction.query.join(Asset).filter(
+                Asset.seller_id == current_user.store_owner_id,
+                (Transaction.delivery_status == None) | (Transaction.delivery_status == 'Pending')
+            ).count()
+            counts['pending_orders_count'] = pending_count
+        elif current_user.role == 'buyer':
+            from models import CartItem
+            counts['cart_item_count'] = CartItem.query.filter_by(buyer_id=current_user.id).count()
+    return counts
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

@@ -1,45 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
-from models import db, Asset, Transaction, Address, ActivityLog, User, CartItem
 import os
+import re
 
-buyer_bp = Blueprint('buyer', __name__)
+file_path = 'routes/buyer.py'
 
-@buyer_bp.route('/buyer/dashboard')
-@login_required
-def buyer_dashboard():
-    if current_user.role != 'buyer':
-        return redirect(url_for('seller.seller_dashboard'))
-    recent_assets = Asset.query.filter_by(status='Active').order_by(Asset.created_at.desc()).limit(3).all()
-    return render_template('buyer/dashboard.html', assets=recent_assets)
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-@buyer_bp.route('/buyer/marketplace')
-@login_required
-def buyer_marketplace():
-    assets = Asset.query.filter_by(status='Active').order_by(Asset.created_at.desc()).all()
-    return render_template('buyer/marketplace.html', assets=assets)
+# Make sure models has CartItem
+if 'CartItem' not in content:
+    content = content.replace('from models import db, Asset, Transaction, Address, ActivityLog, User', 'from models import db, Asset, Transaction, Address, ActivityLog, User, CartItem')
 
-@buyer_bp.route('/buyer/purchases')
-@login_required
-def buyer_purchases():
-    if current_user.role != 'buyer':
-        return redirect(url_for('seller.seller_dashboard'))
-    transactions = Transaction.query.filter_by(buyer_id=current_user.id).order_by(Transaction.date_purchased.desc()).all()
-    return render_template('buyer/purchases.html', transactions=transactions)
-
-@buyer_bp.route('/buyer/asset/<int:asset_id>')
-@login_required
-def buyer_asset_detail(asset_id):
-    if current_user.role != 'buyer':
-        return redirect(url_for('seller.seller_dashboard'))
-    asset = Asset.query.get_or_404(asset_id)
-    
-    asset.views = (asset.views or 0) + 1
-    db.session.commit()
-    
-    return render_template('buyer/asset-detail.html', asset=asset)
-
-
+# Add cart routes
+cart_routes = """
 @buyer_bp.route('/buyer/cart', methods=['GET'])
 @login_required
 def buyer_cart():
@@ -163,14 +135,7 @@ def buyer_checkout():
                         msg['To'] = recipient
                         msg['Subject'] = f'New Orders Received'
                         
-                        body = f"Hello {seller.first_name},
-
-You have received new orders!
-
-Please check your 'My Sales' dashboard to view the details.
-
-Thanks,
-IVS Team"
+                        body = f"Hello {seller.first_name},\\n\\nYou have received new orders!\\n\\nPlease check your 'My Sales' dashboard to view the details.\\n\\nThanks,\\nIVS Team"
                         msg.attach(MIMEText(body, 'plain'))
                         
                         server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -188,8 +153,13 @@ IVS Team"
     default_address = next((a for a in addresses if a.is_default), addresses[0] if addresses else None)
     
     return render_template('buyer/checkout.html', cart_items=active_items, total_price=total_price, addresses=addresses, default_address=default_address)
+"""
 
-@buyer_bp.route('/buyer/settings')
-@login_required
-def buyer_settings():
-    return render_template('buyer/settings.html')
+# Replace old checkout route
+import re
+
+pattern = re.compile(r"@buyer_bp\.route\('/buyer/checkout/<int:asset_id>', methods=\['GET', 'POST'\]\).*?(?=@buyer_bp\.route\('/buyer/settings'\))", re.DOTALL)
+new_content = pattern.sub(cart_routes + "\n", content)
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(new_content)

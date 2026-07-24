@@ -273,9 +273,13 @@
   <nav class="nav" id="navbar">
     <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
-      <a href="/buyer/dashboard">Overview</a>
+      
       <a href="/buyer/marketplace" style="color: var(--accent);">Marketplace</a>
       <a href="/buyer/purchases">My Purchases</a>
+      <a href="/buyer/cart" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        Cart {% if cart_item_count and cart_item_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">{{ cart_item_count }}</span>{% endif %}
+      </a>
       <a href="/buyer/settings">Settings</a>
       <div class="theme-switch-wrapper" style="margin-left: 20px;">
         <label class="theme-switch">

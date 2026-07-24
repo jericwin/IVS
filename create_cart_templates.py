@@ -1,4 +1,40 @@
-<!DOCTYPE html>
+import os
+import re
+
+# 1. Update Navigation Links in all buyer templates
+buyer_templates_dir = 'templates/buyer'
+address_template = 'templates/addresses.html'
+profile_template = 'templates/profile.html'
+
+nav_cart_link = """      <a href="/buyer/cart" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        Cart {% if cart_item_count and cart_item_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">{{ cart_item_count }}</span>{% endif %}
+      </a>"""
+
+all_files = [os.path.join(root, f) for root, _, files in os.walk(buyer_templates_dir) for f in files if f.endswith('.html')]
+if os.path.exists(address_template): all_files.append(address_template)
+if os.path.exists(profile_template): all_files.append(profile_template)
+
+for filepath in all_files:
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    if '<a href="/buyer/cart"' not in content:
+        # insert after purchases
+        pattern1 = r'(<a href="/buyer/purchases"[^>]*>My Purchases</a>)'
+        pattern2 = r'(<a href="/buyer/purchases">My Purchases</a>)'
+        
+        if re.search(pattern1, content):
+            new_content = re.sub(pattern1, r'\1\n' + nav_cart_link, content)
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+        elif re.search(pattern2, content):
+            new_content = re.sub(pattern2, r'\1\n' + nav_cart_link, content)
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+
+# 2. Rewrite checkout.html
+checkout_html = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -223,4 +259,129 @@
     }
   </script>
 </body>
-</html>
+</html>"""
+
+with open('templates/buyer/checkout.html', 'w', encoding='utf-8') as f:
+    f.write(checkout_html)
+
+
+# 3. Create cart.html
+cart_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | IVS Marketplace</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
+  <style>
+    .dashboard-layout { display: flex; flex-direction: column; min-height: 100vh; padding-top: 80px; }
+    .nav { background: color-mix(in srgb, var(--bg-primary) 95%, transparent); border-bottom: 1px solid var(--border-subtle); }
+    .nav-profile { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-display); font-size: 1.2rem; }
+    .main-content { flex: 1; padding: 60px 5%; max-width: 1000px; margin: 0 auto; width: 100%; }
+    .cart-container { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 40px; animation: fadeUp 0.8s var(--ease-out-expo) forwards; }
+  </style>
+</head>
+<body>
+
+  <!-- Flash Messages -->
+  <div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 400px; pointer-events: none;">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div style="background: var(--accent); color: var(--bg-primary); padding: 16px 24px; border-radius: 8px; text-align: center; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <nav class="nav" id="navbar">
+    <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/buyer/marketplace">Marketplace</a>
+      <a href="/buyer/purchases">My Purchases</a>
+      <a href="/buyer/cart" style="display: inline-flex; align-items: center; gap: 4px; color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        Cart {% if cart_item_count and cart_item_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">{{ cart_item_count }}</span>{% endif %}
+      </a>
+      <a href="/buyer/settings">Settings</a>
+      <div class="theme-switch-wrapper" style="margin-left: 20px;">
+        <label class="theme-switch">
+          <input type="checkbox" onchange="const ev = new Event('change'); this.dispatchEvent(ev);" class="theme-checkbox" />
+          <div class="slider round">
+            <span class="icon-sun" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+            <span class="icon-moon" style="display:flex; color:var(--text-secondary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+          </div>
+        </label>
+      </div>
+      <div style="position: relative; margin-left: 20px;">
+        <div class="nav-profile" style="cursor: pointer;" onclick="const menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block';">
+          <div class="avatar">{{ current_user.first_name[0] if current_user.first_name else 'U' }}</div>
+          <span style="font-size: 0.9rem; font-weight: 500;">{{ current_user.first_name }}</span>
+        </div>
+        <div style="display: none; position: absolute; top: 120%; right: 0; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 200px; z-index: 100;">
+          <a href="/profile" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; margin-bottom: 8px; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">My Profile</a>
+          <a href="/logout" class="auth-btn" style="display: block; width: 100%; text-align: center; margin-top: 0; padding: 10px; font-size: 0.75rem; text-decoration: none; box-sizing: border-box; color: white !important;">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <main class="main-content">
+      
+      <div class="cart-container">
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 24px;">Shopping Cart</h1>
+        
+        {% if cart_items %}
+          <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 40px;">
+            {% for item in cart_items %}
+            <div style="display: flex; gap: 24px; padding: 24px; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-secondary); align-items: center;">
+              <img src="/static/uploads/{{ item.asset.image_filename }}" alt="{{ item.asset.name }}" onerror="this.src='/static/images/product-1.png'" style="width: 120px; height: 120px; object-fit: cover; border-radius: 4px;">
+              <div style="flex: 1;">
+                <h3 style="font-size: 1.2rem; margin: 0 0 8px 0;"><a href="/buyer/asset/{{ item.asset.id }}" style="color: var(--text-primary); text-decoration: none;">{{ item.asset.name }}</a></h3>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 4px;">Category: {{ item.asset.category }}</div>
+                {% if item.variation %}
+                <div style="color: var(--accent); font-size: 0.9rem; margin-bottom: 8px;">Variation: {{ item.variation }}</div>
+                {% endif %}
+                <div style="font-weight: 600; color: var(--accent-light);">₱{{ "{:,.2f}".format(item.asset.price) }} x {{ item.quantity }}</div>
+              </div>
+              <div style="text-align: right; display: flex; flex-direction: column; justify-content: space-between; height: 120px;">
+                <div style="font-size: 1.5rem; font-weight: bold;">₱{{ "{:,.2f}".format(item.asset.price * item.quantity) }}</div>
+                <form action="/buyer/cart/remove/{{ item.id }}" method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="auth-btn" style="width: auto; padding: 8px 16px; margin: 0; background: transparent; border: 1px solid #ff4444; color: #ff4444; font-size: 0.8rem;">Remove</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 32px;">
+            <div style="font-size: 1.2rem; color: var(--text-secondary);">Subtotal ({{ cart_items|length }} items)</div>
+            <div style="font-size: 2rem; font-weight: bold; color: var(--accent-light);">₱{{ "{:,.2f}".format(total_price) }}</div>
+          </div>
+          
+          <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
+            <a href="/buyer/checkout" class="auth-btn" style="width: auto; padding: 16px 48px; text-decoration: none; font-size: 1.1rem; text-align: center;">Proceed to Checkout</a>
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 60px 20px;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5; margin-bottom: 24px; color: var(--text-secondary);"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <h2 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--text-primary);">Your cart is empty</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Looks like you haven't added anything to your cart yet.</p>
+            <a href="/buyer/marketplace" class="auth-btn" style="width: auto; padding: 12px 32px; text-decoration: none;">Continue Shopping</a>
+          </div>
+        {% endif %}
+      </div>
+      
+    </main>
+  </div>
+
+  <script src="/static/theme.js"></script>
+</body>
+</html>"""
+
+with open('templates/buyer/cart.html', 'w', encoding='utf-8') as f:
+    f.write(cart_html)

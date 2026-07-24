@@ -297,9 +297,13 @@
     <a href="/" class="nav-logo"><img src="/static/images/logo.png" alt="IVS Logo"></a>
     <div class="nav-links" id="navLinks">
       {% if current_user.role == 'buyer' %}
-        <a href="/buyer/dashboard">Overview</a>
+        
         <a href="/buyer/marketplace">Marketplace</a>
         <a href="/buyer/purchases">My Purchases</a>
+      <a href="/buyer/cart" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        Cart {% if cart_item_count and cart_item_count > 0 %}<span style="background: var(--accent); color: var(--bg-primary); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">{{ cart_item_count }}</span>{% endif %}
+      </a>
       {% else %}
         <a href="/seller/dashboard">Overview</a>
         <a href="/seller/listings">My Listings</a>
@@ -578,11 +582,41 @@
                     
                     if (data && data.address) {
                       const addr = data.address;
-                      if (addr.road) document.getElementById('street').value = addr.road;
-                      if (addr.house_number) document.getElementById('house_number').value = addr.house_number;
                       if (addr.postcode) document.getElementById('zipcode').value = addr.postcode;
                       
-                      alert('Auto-filled what we could from your GPS. Please manually select the Province/City/Barangay from the dropdowns to ensure accuracy.');
+                      let stateName = addr.state || addr.region || '';
+                      if(stateName) {
+                          const provSelect = document.getElementById('province');
+                          Array.from(provSelect.options).forEach(opt => {
+                              if(opt.text.toLowerCase().includes(stateName.toLowerCase()) || stateName.toLowerCase().includes(opt.text.toLowerCase())) {
+                                  provSelect.value = opt.value;
+                              }
+                          });
+                          await loadCities();
+                          
+                          let cityName = addr.city || addr.town || addr.municipality || '';
+                          if(cityName) {
+                              const citySelect = document.getElementById('city');
+                              Array.from(citySelect.options).forEach(opt => {
+                                  if(opt.text.toLowerCase().includes(cityName.toLowerCase()) || cityName.toLowerCase().includes(opt.text.toLowerCase())) {
+                                      citySelect.value = opt.value;
+                                  }
+                              });
+                              await loadBarangays();
+                              
+                              let brgyName = addr.suburb || addr.village || addr.quarter || addr.neighbourhood || '';
+                              if(brgyName) {
+                                  const brgySelect = document.getElementById('barangay');
+                                  Array.from(brgySelect.options).forEach(opt => {
+                                      if(opt.text.toLowerCase().includes(brgyName.toLowerCase()) || brgyName.toLowerCase().includes(opt.text.toLowerCase())) {
+                                          brgySelect.value = opt.value;
+                                      }
+                                  });
+                              }
+                          }
+                      }
+                      
+                      alert('Auto-filled location data. Please review the selections, and fill in your street and house number.');
                     } else {
                       alert('Could not determine address from location.');
                     }

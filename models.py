@@ -24,6 +24,7 @@ class User(db.Model, UserMixin):
     assets = db.relationship('Asset', backref='seller', lazy=True)
     purchases = db.relationship('Transaction', backref='buyer', lazy=True)
     addresses = db.relationship('Address', backref='user', lazy=True)
+    cart_items = db.relationship('CartItem', backref='buyer', lazy=True, cascade='all, delete-orphan')
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,3 +86,13 @@ class ActivityLog(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     user = db.relationship('User', foreign_keys=[user_id], backref='activities')
+
+class CartItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    asset_id = db.Column(db.Integer, db.ForeignKey('asset.id'), nullable=False)
+    variation = db.Column(db.String(100), nullable=True)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    asset = db.relationship('Asset')
