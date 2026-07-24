@@ -24,8 +24,7 @@ def seller_asset_detail(asset_id):
         flash("You don't have permission to view this asset.")
         return redirect(url_for('seller.seller_listings'))
         
-    mock_views = random.randint(15, 300) 
-    return render_template('seller/asset-detail.html', asset=asset, views=mock_views)
+    return render_template('seller/asset-detail.html', asset=asset, views=asset.views)
 
 @seller_bp.route('/seller/listings')
 @login_required

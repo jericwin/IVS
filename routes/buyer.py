@@ -32,6 +32,10 @@ def buyer_asset_detail(asset_id):
     if current_user.role != 'buyer':
         return redirect(url_for('seller.seller_dashboard'))
     asset = Asset.query.get_or_404(asset_id)
+    
+    asset.views = (asset.views or 0) + 1
+    db.session.commit()
+    
     return render_template('buyer/asset-detail.html', asset=asset)
 
 @buyer_bp.route('/buyer/checkout/<int:asset_id>', methods=['GET', 'POST'])

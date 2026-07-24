@@ -44,6 +44,7 @@ class Asset(db.Model):
     image_filename = db.Column(db.String(100), default='product-1.png')
     is_featured_collection = db.Column(db.Boolean, default=False)
     is_featured_story = db.Column(db.Boolean, default=False)
+    views = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     transaction = db.relationship('Transaction', backref='asset', uselist=False)
