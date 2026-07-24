@@ -318,6 +318,7 @@
       <div class="dashboard-sections" style="grid-template-columns: 1fr; max-width: 800px;">
         
         <form class="section-main" method="POST" action="/seller/add-asset" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 48px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <h3 style="font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 32px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; color: var(--accent-light);">Asset Media</h3>
             

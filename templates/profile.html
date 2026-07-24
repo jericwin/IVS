@@ -376,6 +376,7 @@
         </div>
 
         <form method="POST" action="/profile">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div class="profile-form-row">
             <div class="profile-form-label">Email</div>
             <div class="profile-form-static">{{ current_user.email }}</div>

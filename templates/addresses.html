@@ -382,6 +382,7 @@
         <div id="add-address-form" style="display: none; background: var(--bg-secondary); padding: 24px; border-radius: 8px; margin-bottom: 32px; border: 1px solid var(--border-subtle);">
           <h2 style="font-size: 1.1rem; margin-bottom: 20px;">New Address</h2>
           <form method="POST" action="/profile/addresses">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="profile-form-row">
               <div class="profile-form-label">Full Name</div>
               <input type="text" name="recipient_name" class="profile-form-input" required placeholder="John Doe">

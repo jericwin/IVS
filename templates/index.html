@@ -303,6 +303,7 @@
       <h2 class="section-title">Join the Movement</h2>
       <p class="section-subtitle">Be the first to know about drops, restocks, and exclusive deals. No spam, ever.</p>
       <form class="newsletter-form" onsubmit="handleSubscribe(event)">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="email" class="newsletter-input" placeholder="Enter your email" required>
         <button type="submit" class="newsletter-btn">Subscribe</button>
       </form>

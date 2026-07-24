@@ -221,6 +221,7 @@
         </div>
 
         <form method="POST" action="/buyer/checkout/{{ asset.id }}" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <input type="hidden" name="address_id" id="address_id_input" value="{{ default_address.id if default_address else '' }}">
           <!-- Payment Method Section -->
           <div style="background: var(--bg-card); border-radius: 4px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">

@@ -196,6 +196,7 @@
       {% endwith %}
       
       <form class="auth-form" id="signupForm" method="POST" action="/signup">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="hidden" id="userRole" name="role" value="seller">
         <div class="form-row">
           <div class="form-group">

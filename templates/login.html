@@ -206,6 +206,7 @@
       {% endwith %}
       
       <form class="auth-form" id="loginForm" method="POST" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="hidden" id="userRole" value="seller">
         <div class="form-group">
           <label class="form-label">Email</label>
