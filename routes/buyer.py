@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models import db, Asset, Transaction, Address, ActivityLog, User, CartItem
 import os
+from datetime import datetime
 
 buyer_bp = Blueprint('buyer', __name__)
 
@@ -24,8 +25,57 @@ def buyer_marketplace():
 def buyer_purchases():
     if current_user.role != 'buyer':
         return redirect(url_for('seller.seller_dashboard'))
-    transactions = Transaction.query.filter_by(buyer_id=current_user.id).order_by(Transaction.date_purchased.desc()).all()
-    return render_template('buyer/purchases.html', transactions=transactions)
+    
+    query = Transaction.query.filter_by(buyer_id=current_user.id, buyer_hidden=False)
+    
+    date_from_str = request.args.get('date_from')
+    date_to_str = request.args.get('date_to')
+    
+    date_from = None
+    date_to = None
+    
+    if date_from_str:
+        try:
+            date_from = datetime.strptime(date_from_str, '%Y-%m-%d')
+            query = query.filter(Transaction.date_purchased >= date_from)
+        except ValueError:
+            pass
+            
+    if date_to_str:
+        try:
+            date_to_dt = datetime.strptime(date_to_str, '%Y-%m-%d')
+            # include the whole day by going up to the end of the day
+            date_to = date_to_dt.replace(hour=23, minute=59, second=59)
+            query = query.filter(Transaction.date_purchased <= date_to)
+        except ValueError:
+            pass
+            
+    transactions = query.order_by(Transaction.date_purchased.desc()).all()
+    return render_template('buyer/purchases.html', transactions=transactions, date_from=date_from_str, date_to=date_to_str)
+
+@buyer_bp.route('/buyer/purchases/clear/<int:transaction_id>', methods=['POST'])
+@login_required
+def buyer_purchases_clear(transaction_id):
+    if current_user.role != 'buyer':
+        return redirect(url_for('seller.seller_dashboard'))
+    transaction = Transaction.query.get_or_404(transaction_id)
+    if transaction.buyer_id == current_user.id:
+        transaction.buyer_hidden = True
+        db.session.commit()
+        flash('Purchase removed from history.')
+    return redirect(url_for('buyer.buyer_purchases'))
+
+@buyer_bp.route('/buyer/purchases/clear_all', methods=['POST'])
+@login_required
+def buyer_purchases_clear_all():
+    if current_user.role != 'buyer':
+        return redirect(url_for('seller.seller_dashboard'))
+    transactions = Transaction.query.filter_by(buyer_id=current_user.id, buyer_hidden=False).all()
+    for t in transactions:
+        t.buyer_hidden = True
+    db.session.commit()
+    flash('All purchases cleared from history.')
+    return redirect(url_for('buyer.buyer_purchases'))
 
 @buyer_bp.route('/buyer/asset/<int:asset_id>')
 @login_required

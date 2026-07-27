@@ -308,9 +308,33 @@
   <div class="dashboard-layout">
     <main class="main-content">
       
-      <div class="dashboard-header" style="margin-bottom: 24px;">
-        <h1 class="dashboard-title">My Purchases</h1>
-        <p class="dashboard-subtitle">A history of assets you've acquired.</p>
+      <div class="dashboard-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1 class="dashboard-title">My Purchases</h1>
+          <p class="dashboard-subtitle">A history of assets you've acquired.</p>
+        </div>
+        {% if transactions %}
+        <form action="{{ url_for('buyer.buyer_purchases_clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all your purchase history?');">
+          <button type="submit" class="auth-btn" style="background: transparent; border: 1px solid var(--error, #ff4d4f); color: var(--error, #ff4d4f) !important; padding: 8px 16px; font-size: 0.85rem;">Clear All Purchases</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <div class="filter-section" style="margin-bottom: 24px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px;">
+        <form method="GET" action="{{ url_for('buyer.buyer_purchases') }}" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <label for="date_from" style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary);">From Date</label>
+            <input type="date" id="date_from" name="date_from" value="{{ date_from or '' }}" class="auth-input" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary);">
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <label for="date_to" style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary);">To Date</label>
+            <input type="date" id="date_to" name="date_to" value="{{ date_to or '' }}" class="auth-input" style="width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary);">
+          </div>
+          <div>
+            <button type="submit" class="auth-btn" style="padding: 10px 24px;">Filter</button>
+            <a href="{{ url_for('buyer.buyer_purchases') }}" class="auth-btn" style="background: transparent; border: 1px solid var(--border-subtle); color: var(--text-primary) !important; padding: 10px 24px; text-decoration: none; display: inline-block;">Reset</a>
+          </div>
+        </form>
       </div>
 
       <div class="dashboard-sections" style="grid-template-columns: 1fr;">
@@ -351,7 +375,12 @@
                     <h4 style="font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Order Info</h4>
                     <p style="margin: 0; font-size: 0.95rem;">Order ID: #{{ tx.id }}</p>
                     <p style="margin: 4px 0 0 0; font-size: 0.95rem;">Payment: <span style="text-transform: capitalize;">{% if tx.payment_method == 'cod' %}Cash on Delivery{% elif tx.payment_method == 'ewallet' %}E-Wallet{% elif tx.payment_method %}{{ tx.payment_method }}{% else %}Unknown{% endif %}</span></p>
-                    <a href="/buyer/asset/{{ tx.asset.id }}" class="auth-btn" style="display: inline-block; width: auto; margin-top: 12px; padding: 6px 12px; font-size: 0.8rem; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important;">View Asset</a>
+                    <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                      <a href="/buyer/asset/{{ tx.asset.id }}" class="auth-btn" style="display: inline-block; width: auto; padding: 6px 12px; font-size: 0.8rem; background: transparent; border: 1px solid var(--accent); color: var(--accent) !important; text-decoration: none;">View Asset</a>
+                      <form action="{{ url_for('buyer.buyer_purchases_clear', transaction_id=tx.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Clear this purchase from history?');">
+                        <button type="submit" class="auth-btn" style="display: inline-block; width: auto; padding: 6px 12px; font-size: 0.8rem; background: transparent; border: 1px solid var(--error, #ff4d4f); color: var(--error, #ff4d4f) !important;">Clear</button>
+                      </form>
+                    </div>
                   </div>
                 </div>
               </div>

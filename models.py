@@ -74,6 +74,7 @@ class Transaction(db.Model):
     date_purchased = db.Column(db.DateTime, default=datetime.utcnow)
     delivery_status = db.Column(db.String(50), default='Pending')
     delivery_evidence_filename = db.Column(db.String(100), nullable=True)
+    buyer_hidden = db.Column(db.Boolean, default=False)
     
     address = db.relationship('Address', backref='transactions')
 
