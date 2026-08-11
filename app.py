@@ -47,6 +47,11 @@ google = oauth.register(
 
 # Database Setup
 database_url = os.environ.get("DATABASE_URL", "sqlite:///ivs.db")
+
+# Neon DBs add query parameters like ?sslmode=require that pg8000 does not support
+if "?" in database_url:
+    database_url = database_url.split("?")[0]
+
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql+pg8000://", 1)
 elif database_url.startswith("postgresql://"):
