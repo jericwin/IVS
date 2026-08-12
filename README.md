@@ -1,11 +1,11 @@
-# 📦 Inventory & Vending System (IVS)
+# 📦 IVS
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-green.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-3.1.1-red.svg)
 ![License](https://img.shields.io/badge/License-MIT-purple.svg)
 
-Welcome to the **Inventory & Vending System (IVS)**! A comprehensive, full-stack marketplace and inventory management web application built with Python and Flask. IVS provides dedicated dashboards for buyers, sellers, and employees to seamlessly manage products, orders, and storefronts.
+Welcome to the **IVS**! A comprehensive, full-stack marketplace and inventory management web application built with Python and Flask. IVS provides dedicated dashboards for buyers, sellers, and employees to seamlessly manage products, orders, and storefronts.
 
 ## ✨ Features
 
