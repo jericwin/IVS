@@ -27,7 +27,7 @@ def seller_dashboard():
     transactions = Transaction.query.filter(Transaction.asset_id.in_(asset_ids)).all() if asset_ids else []
     total_sales_volume = sum((tx.asset.price or 0.0) for tx in transactions if tx.asset)
     
-    recent_activity = ActivityLog.query.filter(
+    recent_activity = ActivityLog.query.options(db.joinedload(ActivityLog.user)).filter(
         ActivityLog.store_owner_id == current_user.store_owner_id,
         ActivityLog.action.notin_(['login', 'logout'])
     ).order_by(ActivityLog.timestamp.desc()).limit(5).all()
@@ -121,7 +121,7 @@ from flask import make_response
 def seller_sales():
     if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer.buyer_dashboard'))
-    transactions = Transaction.query.join(Asset).filter(Asset.seller_id == current_user.store_owner_id).order_by(Transaction.date_purchased.desc()).all()
+    transactions = Transaction.query.options(db.joinedload(Transaction.asset), db.joinedload(Transaction.buyer)).join(Asset).filter(Asset.seller_id == current_user.store_owner_id).order_by(Transaction.date_purchased.desc()).all()
     
     resp = make_response(render_template('seller/sales.html', transactions=transactions))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -506,7 +506,7 @@ def seller_delete_employee(id):
 def seller_logs():
     if current_user.role not in ['seller', 'employee']:
         return redirect(url_for('buyer.buyer_dashboard'))
-    logs = ActivityLog.query.filter_by(store_owner_id=current_user.store_owner_id).order_by(ActivityLog.timestamp.desc()).all()
+    logs = ActivityLog.query.options(db.joinedload(ActivityLog.user)).filter_by(store_owner_id=current_user.store_owner_id).order_by(ActivityLog.timestamp.desc()).all()
     return render_template('seller/logs.html', logs=logs)
 
 @seller_bp.route('/seller/analytics')

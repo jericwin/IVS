@@ -70,7 +70,7 @@ def buyer_purchases_clear(transaction_id):
 def buyer_purchases_clear_all():
     if current_user.role != 'buyer':
         return redirect(url_for('seller.seller_dashboard'))
-    transactions = Transaction.query.filter_by(buyer_id=current_user.id, buyer_hidden=False).all()
+    transactions = Transaction.query.options(db.joinedload(Transaction.asset)).filter_by(buyer_id=current_user.id, buyer_hidden=False).all()
     for t in transactions:
         t.buyer_hidden = True
     db.session.commit()

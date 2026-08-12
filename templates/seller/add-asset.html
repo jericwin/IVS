@@ -340,7 +340,7 @@
                     <label style="border: 2px dashed var(--border-subtle); border-radius: 4px; height: 55px; text-align: center; cursor: pointer; background: var(--bg-primary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
                       <input type="file" name="variation_image[]" accept="image/*" required onchange="previewVariationImage(this)" style="display: none;">
                       <div class="var-image-placeholder" style="color: var(--text-secondary); font-size: 0.8rem; padding-top: 18px;">+ Upload Image</div>
-                      <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                      <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10;">
                     </label>
                   </div>
                   <button type="button" onclick="this.parentElement.remove()" style="padding: 16px; background: transparent; border: 1px solid red; color: red; border-radius: 4px; cursor: pointer; height: 55px;">Remove</button>
@@ -430,7 +430,7 @@
           <label style="border: 2px dashed var(--border-subtle); border-radius: 4px; height: 55px; text-align: center; cursor: pointer; background: var(--bg-primary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
             <input type="file" name="variation_image[]" accept="image/*" required onchange="previewVariationImage(this)" style="display: none;">
             <div class="var-image-placeholder" style="color: var(--text-secondary); font-size: 0.8rem; padding-top: 18px;">+ Upload Image</div>
-            <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+            <img class="var-image-preview" src="#" alt="Preview" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10;">
           </label>
         </div>
         <button type="button" onclick="this.parentElement.remove()" style="padding: 16px; background: transparent; border: 1px solid red; color: red; border-radius: 4px; cursor: pointer; height: 55px;">Remove</button>
