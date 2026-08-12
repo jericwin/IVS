@@ -64,7 +64,7 @@ def signup():
 @auth_bp.route('/login/google')
 def login_google():
     redirect_uri = url_for('auth.authorize_google', _external=True)
-    return oauth.google.authorize_redirect(redirect_uri)
+    return oauth.google.authorize_redirect(redirect_uri, prompt='select_account')
 
 @auth_bp.route('/authorize/google')
 def authorize_google():
