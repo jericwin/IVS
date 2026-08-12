@@ -353,7 +353,7 @@
             
             {% for asset in assets %}
             <div class="collection-item cycle-on-hover" data-status="{{ asset.status or 'Active' }}" data-name="{{ asset.name | lower }}" data-images='{{ asset.variations | map(attribute="image_filename") | list | tojson }}'>
-              <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+              <img src="{% if asset.image_filename and asset.image_filename.startswith('http') %}{{ asset.image_filename }}{% else %}/static/uploads/{{ asset.image_filename }}{% endif %}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
               
               <!-- Star Button for Collection Feature -->
               <div style="position: absolute; top: 16px; left: 16px; z-index: 20;">
@@ -444,7 +444,7 @@
         item.addEventListener('mouseenter', () => {
           interval = setInterval(() => {
             idx = (idx + 1) % images.length;
-            if(images[idx]) img.src = '/static/uploads/' + images[idx];
+            if(images[idx]) img.src = (images[idx] && images[idx].startsWith('http')) ? images[idx] : '/static/uploads/' + images[idx];
           }, 800);
         });
         

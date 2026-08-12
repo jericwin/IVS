@@ -92,7 +92,7 @@
           
           {% for item in cart_items %}
           <div style="display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; margin-bottom: 16px;">
-            <img src="/static/uploads/{{ item.asset.image_filename }}" alt="{{ item.asset.name }}" onerror="this.src='/static/images/product-1.png'" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
+            <img src="{% if item.asset.image_filename and item.asset.image_filename.startswith('http') %}{{ item.asset.image_filename }}{% else %}/static/uploads/{{ item.asset.image_filename }}{% endif %}" alt="{{ item.asset.name }}" onerror="this.src='/static/images/product-1.png'" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
             <div style="flex: 1;">
               <div style="font-weight: 600; font-size: 1.1rem;">{{ item.asset.name }}</div>
               {% if item.variation %}

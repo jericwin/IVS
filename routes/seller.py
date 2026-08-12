@@ -131,6 +131,20 @@ def seller_sales():
 
 import uuid
 from werkzeug.utils import secure_filename
+import requests
+
+def upload_to_catbox(file):
+    try:
+        # Seek to beginning in case it was read before
+        file.stream.seek(0)
+        files = {'fileToUpload': (file.filename, file.stream, file.mimetype)}
+        data = {'reqtype': 'fileupload'}
+        resp = requests.post('https://catbox.moe/user/api.php', files=files, data=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.text.strip()
+    except Exception as e:
+        print(f"Catbox upload error: {e}")
+    return None
 
 @seller_bp.route('/seller/sales/update_status/<int:transaction_id>', methods=['POST'])
 @csrf.exempt if csrf else lambda f: f
@@ -170,14 +184,11 @@ def update_delivery_status(transaction_id):
             return redirect(url_for('seller.seller_sales'))
             
         if file:
-            filename = secure_filename(file.filename)
-            unique_filename = str(uuid.uuid4()) + "_" + filename
-            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filepath = os.path.join(upload_dir, unique_filename)
-            file.save(filepath)
-            
-            tx.delivery_evidence_filename = unique_filename
+            catbox_url = upload_to_catbox(file)
+            if catbox_url:
+                tx.delivery_evidence_filename = catbox_url
+            else:
+                tx.delivery_evidence_filename = "upload_failed.png"
             tx.delivery_status = status
             
             log = ActivityLog(
@@ -239,8 +250,6 @@ def seller_add_asset():
         db.session.flush() # To get new_asset.id
         
         has_main_image = False
-        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
         
         for i in range(len(variation_names)):
             var_name = variation_names[i]
@@ -248,10 +257,9 @@ def seller_add_asset():
             
             var_filename = 'product-1.png'
             if var_image and var_image.filename:
-                import uuid
-                from werkzeug.utils import secure_filename
-                var_filename = str(uuid.uuid4()) + "_" + secure_filename(var_image.filename)
-                var_image.save(os.path.join(upload_dir, var_filename))
+                catbox_url = upload_to_catbox(var_image)
+                if catbox_url:
+                    var_filename = catbox_url
                 
             if not has_main_image and var_filename != 'product-1.png':
                 new_asset.image_filename = var_filename
@@ -269,8 +277,9 @@ def seller_add_asset():
             image = request.files.get('image') # Fallback to old image input if exists
             filename = 'product-1.png'
             if image and image.filename:
-                filename = image.filename
-                image.save(os.path.join(upload_dir, filename))
+                catbox_url = upload_to_catbox(image)
+                if catbox_url:
+                    filename = catbox_url
                 new_asset.image_filename = filename
             new_var = AssetVariation(asset_id=new_asset.id, name="Default", image_filename=filename)
             db.session.add(new_var)
@@ -317,9 +326,6 @@ def seller_edit_asset(asset_id):
         
         from models import AssetVariation
         
-        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        
         variation_names = request.form.getlist('variation_name[]')
         variation_images = request.files.getlist('variation_image[]')
         existing_variation_ids = request.form.getlist('existing_variation_id[]')
@@ -338,10 +344,9 @@ def seller_edit_asset(asset_id):
                 var_filename = existing_img or 'product-1.png'
                 
                 if var_image and var_image.filename:
-                    import uuid
-                    from werkzeug.utils import secure_filename
-                    var_filename = str(uuid.uuid4()) + "_" + secure_filename(var_image.filename)
-                    var_image.save(os.path.join(upload_dir, var_filename))
+                    catbox_url = upload_to_catbox(var_image)
+                    if catbox_url:
+                        var_filename = catbox_url
                     
                 if not has_main_image and var_filename != 'product-1.png':
                     asset.image_filename = var_filename
@@ -356,17 +361,17 @@ def seller_edit_asset(asset_id):
         else:
             image = request.files.get('image')
             if image and image.filename:
-                filename = image.filename
-                image.save(os.path.join(upload_dir, filename))
-                asset.image_filename = filename
-                
-                # Update default variation image if no variations were passed
-                default_var = AssetVariation.query.filter_by(asset_id=asset.id).first()
-                if default_var:
-                    default_var.image_filename = filename
-                else:
-                    new_var = AssetVariation(asset_id=asset.id, name="Default", image_filename=filename)
-                    db.session.add(new_var)
+                catbox_url = upload_to_catbox(image)
+                if catbox_url:
+                    asset.image_filename = catbox_url
+                    
+                    # Update default variation image if no variations were passed
+                    default_var = AssetVariation.query.filter_by(asset_id=asset.id).first()
+                    if default_var:
+                        default_var.image_filename = catbox_url
+                    else:
+                        new_var = AssetVariation(asset_id=asset.id, name="Default", image_filename=catbox_url)
+                        db.session.add(new_var)
                 
         # Log activity
         log = ActivityLog(

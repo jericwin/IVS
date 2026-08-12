@@ -143,7 +143,7 @@
               {% if asset.variations and asset.variations|length > 1 %}
                 <button type="button" onclick="cycleVariation(-1)" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&larr;</button>
               {% endif %}
-              <img id="mainAssetImage" src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 4px; margin-bottom: 32px; background: var(--bg-secondary); padding: 16px;" onerror="this.src='/static/images/product-1.png'">
+              <img id="mainAssetImage" src="{% if asset.image_filename and asset.image_filename.startswith('http') %}{{ asset.image_filename }}{% else %}/static/uploads/{{ asset.image_filename }}{% endif %}" alt="{{ asset.name }}" style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 4px; margin-bottom: 32px; background: var(--bg-secondary); padding: 16px;" onerror="this.src='/static/images/product-1.png'">
               {% if asset.variations and asset.variations|length > 1 %}
                 <button type="button" onclick="cycleVariation(1)" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 10;">&rarr;</button>
               {% endif %}
@@ -276,7 +276,7 @@
       btn.style.color = 'var(--accent)';
       
       if (imageFilename) {
-        document.getElementById('mainAssetImage').src = '/static/uploads/' + imageFilename;
+        document.getElementById('mainAssetImage').src = (imageFilename && imageFilename.startsWith('http')) ? imageFilename : '/static/uploads/' + imageFilename;
       }
     }
     

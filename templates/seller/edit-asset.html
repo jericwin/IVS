@@ -344,7 +344,7 @@
                       <label style="border: 2px dashed var(--border-subtle); border-radius: 4px; height: 55px; text-align: center; cursor: pointer; background: var(--bg-primary); display: block; position: relative; overflow: hidden;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
                         <input type="file" name="variation_image[]" accept="image/*" onchange="previewVariationImage(this)" style="display: none;">
                         <div class="var-image-placeholder" style="color: var(--text-secondary); font-size: 0.8rem; padding-top: 18px; display: none;">+ Upload Image</div>
-                        <img class="var-image-preview" src="/static/uploads/{{ var.image_filename }}" alt="Preview" style="display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                        <img class="var-image-preview" src="{% if var.image_filename and var.image_filename.startswith('http') %}{{ var.image_filename }}{% else %}/static/uploads/{{ var.image_filename }}{% endif %}" alt="Preview" style="display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                       </label>
                       <small style="color: var(--text-secondary);">Leave empty to keep current image</small>
                     </div>

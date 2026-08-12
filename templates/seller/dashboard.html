@@ -351,7 +351,7 @@
             {% for asset in assets %}
             <a href="/seller/asset/{{ asset.id }}" style="text-decoration: none; color: inherit;">
               <div class="collection-item">
-                <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+                <img src="{% if asset.image_filename and asset.image_filename.startswith('http') %}{{ asset.image_filename }}{% else %}/static/uploads/{{ asset.image_filename }}{% endif %}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
                 <div class="collection-info">
                   {% if asset.status == 'Sold' %}
                   <div style="position: absolute; top: 16px; right: 16px; background: var(--accent); color: var(--bg-primary); padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; text-transform: uppercase;">Sold</div>

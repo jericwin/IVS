@@ -154,7 +154,7 @@
       {% for asset in collection_assets %}
       <div class="product-card reveal reveal-delay-{{ loop.index }}">
         <div class="product-image">
-          <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}">
+          <img src="{% if asset.image_filename and asset.image_filename.startswith('http') %}{{ asset.image_filename }}{% else %}/static/uploads/{{ asset.image_filename }}{% endif %}" alt="{{ asset.name }}">
           <div class="product-overlay">
             <a href="/buyer/asset/{{ asset.id }}" style="text-decoration:none;"><button
                 class="product-overlay-btn">Quick View</button></a>
@@ -232,7 +232,7 @@
     <div class="lookbook-grid reveal">
       <div class="lookbook-visual">
         {% if story_asset %}
-        <img src="/static/uploads/{{ story_asset.image_filename }}" alt="IVS Lookbook">
+        <img src="{% if story_asset.image_filename and story_asset.image_filename.startswith('http') %}{{ story_asset.image_filename }}{% else %}/static/uploads/{{ story_asset.image_filename }}{% endif %}" alt="IVS Lookbook">
         {% else %}
         <img src="/static/images/jacket.png" alt="IVS Lookbook">
         {% endif %}

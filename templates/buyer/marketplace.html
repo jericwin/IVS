@@ -325,7 +325,7 @@
           <div class="collection-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
             {% for asset in assets %}
             <a href="/buyer/asset/{{ asset.id }}" class="collection-item cycle-on-hover" style="text-decoration: none;" data-images='{{ asset.variations | map(attribute="image_filename") | list | tojson }}'>
-              <img src="/static/uploads/{{ asset.image_filename }}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
+              <img src="{% if asset.image_filename and asset.image_filename.startswith('http') %}{{ asset.image_filename }}{% else %}/static/uploads/{{ asset.image_filename }}{% endif %}" alt="{{ asset.name }}" onerror="this.src='/static/images/product-1.png'">
               <div class="collection-info">
                 <div class="collection-name">{{ asset.name }}</div>
                 <div class="collection-meta">₱{{ "{:,.2f}".format(asset.price) }}</div>
@@ -359,7 +359,7 @@
         item.addEventListener('mouseenter', () => {
           interval = setInterval(() => {
             idx = (idx + 1) % images.length;
-            if(images[idx]) img.src = '/static/uploads/' + images[idx];
+            if(images[idx]) img.src = (images[idx] && images[idx].startsWith('http')) ? images[idx] : '/static/uploads/' + images[idx];
           }, 800);
         });
         item.addEventListener('mouseleave', () => {
