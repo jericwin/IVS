@@ -86,15 +86,6 @@ Welcome to the **Inventory & Vending System (IVS)**! A comprehensive, full-stack
     ```
     Visit `http://localhost:5000` in your browser.
 
-## 👥 Default Accounts
-
-For development purposes, the following default accounts are created automatically:
-
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin Seller** | `seller@ivs.com` | `seller123` |
-| **Buyer** | `jasmine.araza@gmail.com` | `jasmine123` |
-
 ## 📦 Deployment
 
 This application is ready to be deployed on platforms like **Vercel** or **Render**. 
